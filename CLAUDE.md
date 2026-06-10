@@ -57,6 +57,10 @@ stdout → parse "Adding" lines for progress), `Logger` (timestamped lines to
 the UI log area), `MetaCollector` (time-capsule generation; detectors are
 data-driven: file-glob, registry-export, and command-output kinds).
 
+`Rar.exe` is auto-discovered at startup: quick depth-limited recursive search
+of the exe's directory, then the current working directory; first match wins,
+path logged; Backup disabled with an `ERROR:` log line if not found.
+
 The pure parts (command-line builder, output parser, exclude matching,
 archive naming) must stay free of UI/Win32 dependencies so the test exe can
 cover them.

@@ -46,9 +46,22 @@ Technical notes:
 |---|---|
 | `MainWindow` (UI) | Single window + WndProc: folder list, settings, Backup/Cancel button, progress bar, log area; exclude rules dialog. |
 | `Settings` | Load/save `settings.json` next to the exe (nlohmann/json). Persists: folder list, backup name, destination, compression level, solid flag, exclude rules (type + value each), time-capsule checkboxes. **Password is never persisted.** Settings save on change. |
-| `RarRunner` | Locates `Rar.exe` relative to the app folder; pre-scans source folders (honoring excludes) to count files; builds the command line; runs the process on a worker thread with redirected stdout/stderr; posts progress and log events to the UI thread; maps RAR exit codes to friendly messages. |
+| `RarRunner` | Auto-discovers `Rar.exe` (see below); pre-scans source folders (honoring excludes) to count files; builds the command line; runs the process on a worker thread with redirected stdout/stderr; posts progress and log events to the UI thread; maps RAR exit codes to friendly messages. |
 | `Logger` | Append-only, timestamped (`HH:mm:ss`) log lines consumed by the UI log area. Written to by UI actions and `RarRunner`. All updates marshaled to the UI thread via `PostMessage`. |
 | `MetaCollector` | Generates the time-capsule content (`system-info.txt`, file inventories, bookmarks, Important Stuff detectors + manifest) in the destination-side `_meta` staging folder. |
+
+### Rar.exe auto-discovery
+
+`Rar.exe` is not assumed at a fixed path. At startup the app performs a quick
+recursive search (limited depth, e.g. 3 levels) of:
+
+1. the executable's own directory, then
+2. the current working directory (if different).
+
+The first `rar.exe` found (case-insensitive) is used and its full path is
+logged. If none is found, the Backup button is disabled and an `ERROR:` line
+explains what was searched. The same discovery applies to `UnRAR.exe` where
+needed.
 
 ## UI (single page)
 
