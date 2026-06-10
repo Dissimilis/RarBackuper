@@ -73,6 +73,27 @@ TEST_CASE("Adding line with backspace progress artifacts is tolerated")
     CHECK(ev[0].path == L"C:\\data\\y.bin");
 }
 
+TEST_CASE("recovery-record and comment notices are NOT file Adding events")
+{
+    // Real Rar 7.12 output: these start with "Adding" but are not files.
+    // File lines always carry a trailing OK / percentage status.
+    RarOutputParser p;
+    auto ev = feedAll(p, {"Adding the data recovery record     \r\n"
+                          "Adding a comment to probe\\out2.rar\r\n"});
+    REQUIRE(ev.size() == 2);
+    CHECK(ev[0].kind == ParsedEvent::Kind::Line);
+    CHECK(ev[1].kind == ParsedEvent::Kind::Line);
+}
+
+TEST_CASE("Adding line for a directory is an Adding event (RAR prints them too)")
+{
+    RarOutputParser p;
+    auto ev = feedAll(p, {"Adding    C:\\data\\sub                                       OK \r\n"});
+    REQUIRE(ev.size() == 1);
+    CHECK(ev[0].kind == ParsedEvent::Kind::Adding);
+    CHECK(ev[0].path == L"C:\\data\\sub");
+}
+
 TEST_CASE("non-Adding lines pass through as plain log lines")
 {
     RarOutputParser p;

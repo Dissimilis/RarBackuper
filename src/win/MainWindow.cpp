@@ -9,6 +9,7 @@
 #include <format>
 
 #include "engine/RarDiscovery.h"
+#include "engine/RarRunner.h"
 #include "win/ExcludeDialog.h"
 
 namespace win
@@ -211,6 +212,13 @@ LRESULT MainWindow::HandleMessage(UINT msg, WPARAM wp, LPARAM lp)
         return 0;
 
     case WM_DESTROY:
+        if (run_)
+        {
+            run_->RequestCancel();
+            run_->Join();
+            delete run_;
+            run_ = nullptr;
+        }
         PostQuitMessage(0);
         return 0;
     }
@@ -764,10 +772,93 @@ void MainWindow::OnLoadProfile()
     Log(engine::LogSeverity::Info, L"Profile loaded from " + path);
 }
 
-// --- implemented in later tasks ---
-void MainWindow::OnBackupOrCancel() {}
-void MainWindow::StartBackup() {}
-void MainWindow::HandleCompleted(const engine::RunSummary&) {}
-void MainWindow::OnOpenDestination() {}
+void MainWindow::OnBackupOrCancel()
+{
+    if (running_)
+    {
+        Log(engine::LogSeverity::Info, L"Cancel requested...");
+        EnableWindow(btnBackup_, FALSE); // no double-cancel; re-enabled on completion
+        if (run_)
+            run_->RequestCancel();
+    }
+    else
+    {
+        StartBackup();
+    }
+}
+
+void MainWindow::StartBackup()
+{
+    engine::BackupRequest req;
+    req.config = settings_.config;
+    req.password = PasswordText();
+    req.rarExePath = rarPath_;
+    if (!engine::ValidateBackupRequest(req, *sink_))
+        return;
+
+    if (req.config.capsuleImportantStuff && req.password.empty())
+    {
+        Log(engine::LogSeverity::Warn,
+            L"Important Stuff is enabled but no archive password is set - credentials and keys "
+            L"would be stored unencrypted");
+        if (MessageBoxW(hwnd_,
+                        L"Important Stuff is enabled but no archive password is set.\n\n"
+                        L"The archive will contain credentials and keys in plain form.\n\n"
+                        L"Continue without a password?",
+                        L"RarBackuper", MB_YESNO | MB_ICONWARNING | MB_DEFBUTTON2) != IDYES)
+        {
+            Log(engine::LogSeverity::Info, L"Backup aborted by the user (no password)");
+            return;
+        }
+    }
+
+    Log(engine::LogSeverity::Info, L"Backup started");
+    cancelRequested_ = false;
+    run_ = new engine::BackupRun(std::move(req), *sink_);
+    SetRunningUi(true);
+    run_->Start();
+}
+
+void MainWindow::HandleCompleted(const engine::RunSummary& summary)
+{
+    if (run_)
+    {
+        run_->Join();
+        delete run_;
+        run_ = nullptr;
+    }
+    SetRunningUi(false);
+    EnableWindow(btnBackup_, !rarPath_.empty());
+    SetWindowTextW(lblCurrentFile_, L"");
+    lastArchivePath_ = summary.archivePath;
+    if (summary.outcome == engine::RunOutcome::Success ||
+        summary.outcome == engine::RunOutcome::Warning)
+    {
+        SendMessageW(progress_, PBM_SETRANGE32, 0, 1);
+        SendMessageW(progress_, PBM_SETPOS, 1, 0);
+        ShowWindow(btnOpenDest_, SW_SHOW);
+    }
+    else
+    {
+        SendMessageW(progress_, PBM_SETPOS, 0, 0);
+    }
+}
+
+void MainWindow::OnOpenDestination()
+{
+    if (lastArchivePath_.empty())
+        return;
+    PIDLIST_ABSOLUTE pidl = nullptr;
+    if (SUCCEEDED(SHParseDisplayName(lastArchivePath_.c_str(), nullptr, &pidl, 0, nullptr)))
+    {
+        SHOpenFolderAndSelectItems(pidl, 0, nullptr, 0);
+        CoTaskMemFree(pidl);
+    }
+    else
+    {
+        ShellExecuteW(hwnd_, L"open", settings_.config.destination.c_str(), nullptr, nullptr,
+                      SW_SHOWNORMAL);
+    }
+}
 
 }

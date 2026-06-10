@@ -243,13 +243,13 @@ Layout (single page, top to bottom; resizable — log area absorbs extra height,
 
 **Files:** `src/engine/RarRunner.*`, wiring in `MainWindow`
 
-- [ ] **Pre-start validation** (any failure → `ERROR:` log line, run does not start): Rar.exe discovered; folder list non-empty; backup name non-empty (and filename-safe per Task 2 decision); destination set and writable (probe: create+delete a test file).
-- [ ] **Pre-scan** on the worker thread: recursively count files in all selected folders applying exclude rules (Task 3 local matcher); log the total; this is the progress denominator. Inaccessible paths skipped, not fatal.
-- [ ] **Run**: build archive name from current local time; build command line; log the start, the **masked** full command line, and the archive path; `CreateProcessW` with `CREATE_NO_WINDOW`, stdout+stderr redirected to a pipe; read incrementally, feed `RarOutputParser`; every raw output line goes to the log; each `Adding` line increments filesDone → `PostMessage` progress (filesDone/totalFiles) + current file name label.
-- [ ] **Completion**: wait for exit; map exit code (Task 2): 0 → success summary (elapsed time, final archive size from disk, archive path); 1 → completed-with-warnings summary (`WARN:`); else `ERROR:` with the friendly message and the partial archive deleted.
-- [ ] **Cancel**: Backup button becomes Cancel during a run. Cancel → `TerminateProcess` on Rar (if running), delete the partial archive, log a cancellation notice. (Cancel during the meta phase: Task 11.) UI returns to idle state; controls re-enable.
-- [ ] All engine output flows through the `EventSink` interface — no direct UI or stdout access from the engine. The GUI sink delivers everything to the UI thread via `PostMessage` only (progress, log line, state change, completion); no blocking of the message loop at any point.
-- [ ] Verify manually: real backup of a small folder appears in destination, opens in WinRAR, progress moves, log shows Adding lines + summary; cancel mid-run leaves no partial archive. Commit.
+- [x] **Pre-start validation** (any failure → `ERROR:` log line, run does not start): Rar.exe discovered; folder list non-empty; backup name non-empty (and filename-safe per Task 2 decision); destination set and writable (probe: create+delete a test file).
+- [x] **Pre-scan** on the worker thread: recursively count files in all selected folders applying exclude rules (Task 3 local matcher); log the total; this is the progress denominator. Inaccessible paths skipped, not fatal.
+- [x] **Run**: build archive name from current local time; build command line; log the start, the **masked** full command line, and the archive path; `CreateProcessW` with `CREATE_NO_WINDOW`, stdout+stderr redirected to a pipe; read incrementally, feed `RarOutputParser`; every raw output line goes to the log; each `Adding` line increments filesDone → `PostMessage` progress (filesDone/totalFiles) + current file name label.
+- [x] **Completion**: wait for exit; map exit code (Task 2): 0 → success summary (elapsed time, final archive size from disk, archive path); 1 → completed-with-warnings summary (`WARN:`); else `ERROR:` with the friendly message and the partial archive deleted.
+- [x] **Cancel**: Backup button becomes Cancel during a run. Cancel → `TerminateProcess` on Rar (if running), delete the partial archive, log a cancellation notice. (Cancel during the meta phase: Task 11.) UI returns to idle state; controls re-enable.
+- [x] All engine output flows through the `EventSink` interface — no direct UI or stdout access from the engine. The GUI sink delivers everything to the UI thread via `PostMessage` only (progress, log line, state change, completion); no blocking of the message loop at any point.
+- [x] Verify manually: real backup of a small folder appears in destination, opens in WinRAR, progress moves, log shows Adding lines + summary; cancel mid-run leaves no partial archive. Commit.
 
 ## Task 10: Convenience — comment stamp, notification, open destination
 

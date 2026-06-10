@@ -9,6 +9,11 @@
 #include "engine/Settings.h"
 #include "win/Logger.h"
 
+namespace engine
+{
+class BackupRun;
+}
+
 namespace win
 {
 
@@ -98,7 +103,7 @@ private:
     bool cancelRequested_ = false;
     bool suppressPersist_ = false; // true while programmatically setting control values
 
-    void* run_ = nullptr; // active BackupRun (Task 9)
+    engine::BackupRun* run_ = nullptr; // active backup run, owned
 };
 
 }

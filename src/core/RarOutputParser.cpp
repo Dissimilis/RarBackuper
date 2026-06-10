@@ -44,22 +44,27 @@ void TrimRight(std::wstring& s)
         s.pop_back();
 }
 
-// Strip trailing "OK" / "NN%" status artifacts from an Adding line remainder.
-void StripTrailingArtifacts(std::wstring& s)
+// Strip trailing "OK" / "NN%" status artifacts from an Adding line
+// remainder. Returns true if at least one artifact was removed -- that is
+// the marker of a real per-item Adding line; RAR's "Adding the data
+// recovery record" / "Adding a comment to ..." notices carry no status.
+bool StripTrailingArtifacts(std::wstring& s)
 {
+    bool stripped = false;
     for (;;)
     {
         TrimRight(s);
         size_t ws = s.find_last_of(L" \t");
         if (ws == std::wstring::npos)
-            return; // nothing before the token -> the whole string is the path
+            return stripped; // nothing before the token -> the whole string is the path
         std::wstring_view token = std::wstring_view(s).substr(ws + 1);
         bool isOk = token == L"OK";
         bool isPercent = token.size() >= 2 && token.back() == L'%' &&
                          IsDigits(token.substr(0, token.size() - 1));
         if (!isOk && !isPercent)
-            return;
+            return stripped;
         s.erase(ws);
+        stripped = true;
     }
 }
 
@@ -109,8 +114,7 @@ void RarOutputParser::EmitLine(std::string rawLine, std::vector<ParsedEvent>& ou
         if (pathStart != std::wstring::npos)
         {
             std::wstring path = rest.substr(pathStart);
-            StripTrailingArtifacts(path);
-            if (!path.empty())
+            if (StripTrailingArtifacts(path) && !path.empty())
             {
                 ev.kind = ParsedEvent::Kind::Adding;
                 ev.path = std::move(path);
