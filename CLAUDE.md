@@ -19,8 +19,11 @@ detector catalog.
 
 ## Tech stack (decided, do not change without asking)
 
-- Native Win32 C++ (C++20, MSVC). No .NET, no frameworks — single small exe,
+- Native Win32 C++ (C++20). No .NET, no frameworks — single small exe,
   zero runtime dependencies.
+- Toolchain: MinGW-w64 GCC (UCRT) + CMake + Ninja (the only toolchain
+  installed on this machine — there is no MSVC). Static-link (`-static`) so
+  the exe stands alone. Keep the CMake project MSVC-compatible.
 - UI: plain Windows API + common controls, visual-styles manifest,
   per-monitor DPI aware. Wide strings (`std::wstring`, `W` APIs) everywhere.
 - JSON via single-header nlohmann/json (settings + `.rbprofile` files).
@@ -39,6 +42,8 @@ detector catalog.
   existing archives are never modified.
 - Backups run on a worker thread; UI updates only via `PostMessage`.
 - On failure or cancel: kill the Rar process and delete the partial archive.
+- The app never requests elevation; admin-dependent detectors degrade
+  gracefully and note the limitation in the manifest/log.
 
 ## Bundled WinRAR
 

@@ -18,8 +18,10 @@ real progress feedback, and a textual log of everything that happens.
 
 ## Architecture
 
-Native Win32 C++ application (C++20, MSVC): a single small `.exe` with zero
-runtime dependencies — no .NET, no framework DLLs. The UI is a single main
+Native Win32 C++ application (C++20): a single small `.exe` with zero
+runtime dependencies — no .NET, no framework DLLs. Toolchain: MinGW-w64 GCC
+(UCRT) + CMake + Ninja, statically linked (`-static`) so the exe stands
+alone; the CMake project keeps an MSVC build possible later. The UI is a single main
 window built with the Windows API and common controls (ListView for the
 folder list, ComboBox, Edit, msctls_progress32 progress bar, read-only
 multiline Edit for the log), with a visual-styles manifest for modern
@@ -245,6 +247,11 @@ folders, not auto-detection).
 
 Rules:
 
+- **Elevation:** the app runs as a normal user and never requests admin
+  rights. Detectors needing elevation (e.g. Wi-Fi keys via `key=clear`,
+  protected registry/system areas) degrade gracefully: they collect what is
+  accessible and record the limitation in the manifest and log. Launched
+  elevated by the user's own choice, they collect full data.
 - Per-file size cap (default 10 MB) keeps the promise of "small important
   files"; oversized matches are listed in the manifest as *found but skipped*
   with their path, so the user still learns they exist.
