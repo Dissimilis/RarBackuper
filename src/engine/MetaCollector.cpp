@@ -7,6 +7,7 @@
 
 #include "core/Text.h"
 #include "engine/Settings.h"
+#include "engine/detectors/Detectors.h"
 
 namespace fs = std::filesystem;
 
@@ -37,10 +38,14 @@ bool MetaCollector::Collect()
     created_ = true;
     sink_.OnLog(LogSeverity::Info, L"Collecting time-capsule data into " + metaDir_);
 
-    // Detector implementations are added by the collectors below; each one
-    // checks the cancel flag and degrades gracefully on missing access.
-    if (Cancelled())
-        return false;
+    if (config_.capsuleSystemInfo && !Cancelled())
+        detectors::WriteSystemInfo(metaDir_ + L"\\system-info.txt", sink_);
+    if (config_.capsuleFileInventory && !Cancelled())
+        detectors::WriteDriveInventories(metaDir_, sink_, cancel_);
+    if (config_.capsuleBookmarks && !Cancelled())
+        detectors::CollectBookmarks(metaDir_ + L"\\bookmarks", sink_, cancel_);
+    if (config_.capsuleImportantStuff && !Cancelled())
+        detectors::CollectImportantStuff(metaDir_ + L"\\important", sink_, cancel_);
 
     return !Cancelled();
 }

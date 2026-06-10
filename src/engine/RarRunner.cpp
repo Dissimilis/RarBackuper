@@ -1,5 +1,7 @@
 #include "engine/RarRunner.h"
 
+#include <objbase.h>
+
 #include <filesystem>
 #include <format>
 #include <vector>
@@ -183,8 +185,11 @@ int BackupRun::RunRarProcess(const std::wstring& commandLine, int totalItems)
     PROCESS_INFORMATION pi{};
 
     std::wstring mutableCmd = commandLine;
+    // CWD = destination so the relative "_meta" argument is stored at the
+    // archive root while absolute source folders keep their full paths.
     BOOL created = CreateProcessW(nullptr, mutableCmd.data(), nullptr, nullptr, TRUE,
-                                  CREATE_NO_WINDOW, nullptr, nullptr, &si, &pi);
+                                  CREATE_NO_WINDOW, nullptr, req_.config.destination.c_str(),
+                                  &si, &pi);
     CloseHandle(writePipe);
     if (!created)
     {
@@ -237,6 +242,17 @@ int BackupRun::RunRarProcess(const std::wstring& commandLine, int totalItems)
 
 void BackupRun::Worker()
 {
+    // COM for WMI queries done by the meta collectors on this thread.
+    struct ComScope
+    {
+        HRESULT hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+        ~ComScope()
+        {
+            if (SUCCEEDED(hr))
+                CoUninitialize();
+        }
+    } comScope;
+
     const ULONGLONG t0 = GetTickCount64();
     RunSummary summary;
 
@@ -295,7 +311,9 @@ void BackupRun::Worker()
             finish(RunOutcome::Cancelled, L"Backup cancelled during time-capsule collection");
             return;
         }
-        effectiveConfig.folders.push_back(collector.MetaDir());
+        // relative on purpose: Rar runs with CWD = destination, so the
+        // capsule content lands at "_meta\" in the archive root
+        effectiveConfig.folders.push_back(L"_meta");
     }
     commentFile = collector.WriteCommentFile(req_.config);
 
