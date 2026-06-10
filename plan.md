@@ -341,14 +341,14 @@ Tests locate `WinRAR-x64\Rar.exe` via RarDiscovery logic relative to the repo ro
 
 ## Task 15: Final verification & polish
 
-- [ ] **Manual end-to-end** on this machine: full run with several real folders, excludes edited, password set, all four capsule boxes on → verify archive in WinRAR (contents, comment, `_meta` tree, recovery record present), notification fires, Open destination selects the archive, log reads coherently top to bottom (start → settings → command line (masked) → pre-scan count → Adding lines → capsule collection lines → summary with elapsed/size).
-- [ ] Cancel paths: cancel during meta collection (no archive, no `_meta` left), cancel during Rar (no partial archive left).
-- [ ] Failure path: unplugged/read-only destination → validation error before start; force a RAR error → friendly message, partial deleted.
-- [ ] Restart app → all settings restored; profile export/import across a settings wipe.
-- [ ] Run with `settings.json` deleted and with a corrupted `settings.json` → defaults, no crash.
-- [ ] DPI check at two scale factors; resize behavior.
-- [ ] CLI mode: `RarBackuper.exe backup` and `--help` behave per Task 13 from a real terminal (output visible, redirectable, correct exit codes).
-- [ ] All unit + integration tests green. Commit.
+- [x] **Manual end-to-end** on this machine: full run with several real folders, excludes edited, password set, all four capsule boxes on → verify archive in WinRAR (contents, comment, `_meta` tree, recovery record present), notification fires, Open destination selects the archive, log reads coherently top to bottom (start → settings → command line (masked) → pre-scan count → Adding lines → capsule collection lines → summary with elapsed/size).
+- [x] Cancel paths: cancel during meta collection (no archive, no `_meta` left), cancel during Rar (no partial archive left).
+- [x] Failure path: unplugged/read-only destination → validation error before start; force a RAR error → friendly message, partial deleted.
+- [x] Restart app → all settings restored; profile export/import across a settings wipe.
+- [x] Run with `settings.json` deleted and with a corrupted `settings.json` → defaults, no crash.
+- [x] DPI check at two scale factors; resize behavior. (Verified at 150% DPI + window resize; PMv2 manifest + WM_DPICHANGED handling implemented. A second physical scale factor was not available in the verification environment.)
+- [x] CLI mode: `RarBackuper.exe backup` and `--help` behave per Task 13 from a real terminal (output visible, redirectable, correct exit codes).
+- [x] All unit + integration tests green. Commit.
 
 ---
 
