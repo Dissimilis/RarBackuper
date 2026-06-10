@@ -226,10 +226,10 @@ Layout (single page, top to bottom; resizable — log area absorbs extra height,
 
 **Files:** `src/win/ExcludeDialog.*`
 
-- [ ] Modal dialog: rule list (two columns: rule value, type), buttons `Add folder…` (folder picker OR typed bare name — provide a small text entry + picker), `Add file…` (file picker or typed bare name), `Add pattern` (text entry), `Remove`, `Restore defaults` (confirmation prompt, then resets to the built-in default list), `OK`/`Cancel`.
-- [ ] Semantics: full path = excludes that specific item; bare name = excludes any item with that name anywhere (per Task 3 translation).
-- [ ] OK commits to settings (persist + refresh the `Excludes [ N rules ]` summary); Cancel discards edits.
-- [ ] Verify manually; Commit.
+- [x] Modal dialog: rule list (two columns: rule value, type), buttons `Add folder…` (folder picker OR typed bare name — provide a small text entry + picker), `Add file…` (file picker or typed bare name), `Add pattern` (text entry), `Remove`, `Restore defaults` (confirmation prompt, then resets to the built-in default list), `OK`/`Cancel`.
+- [x] Semantics: full path = excludes that specific item; bare name = excludes any item with that name anywhere (per Task 3 translation).
+- [x] OK commits to settings (persist + refresh the `Excludes [ N rules ]` summary); Cancel discards edits.
+- [x] Verify manually; Commit.
 
 ## Task 8: Profiles (save/load)
 

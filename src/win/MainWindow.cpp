@@ -9,6 +9,7 @@
 #include <format>
 
 #include "engine/RarDiscovery.h"
+#include "win/ExcludeDialog.h"
 
 namespace win
 {
@@ -143,6 +144,9 @@ LRESULT MainWindow::HandleMessage(UINT msg, WPARAM wp, LPARAM lp)
         Layout();
         return 0;
     }
+
+    case WM_GETFONT:
+        return reinterpret_cast<LRESULT>(font_);
 
     case WM_CTLCOLORSTATIC:
     {
@@ -667,9 +671,20 @@ void MainWindow::SetRunningUi(bool running)
     }
 }
 
-// --- implemented in later tasks ---
+void MainWindow::OnEditExcludes()
+{
+    auto rules = settings_.config.excludeRules;
+    if (ShowExcludeDialog(hwnd_, hInstance_, rules))
+    {
+        settings_.config.excludeRules = std::move(rules);
+        RefreshExcludeSummary();
+        PersistSettings();
+        Log(engine::LogSeverity::Info,
+            std::format(L"Exclude rules updated ({} rules)", settings_.config.excludeRules.size()));
+    }
+}
 
-void MainWindow::OnEditExcludes() {}
+// --- implemented in later tasks ---
 void MainWindow::OnSaveProfile() {}
 void MainWindow::OnLoadProfile() {}
 void MainWindow::OnBackupOrCancel() {}
