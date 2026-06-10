@@ -6,6 +6,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 set(CORE_SOURCES
+    src/core/Text.cpp
     src/core/ArchiveName.cpp
     src/core/ExcludeRules.cpp
     src/core/RarCommandLine.cpp
