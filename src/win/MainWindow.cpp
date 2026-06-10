@@ -684,9 +684,87 @@ void MainWindow::OnEditExcludes()
     }
 }
 
+namespace
+{
+
+// Save/Open dialog for *.rbprofile files; returns the chosen path or empty.
+std::wstring PickProfilePath(HWND owner, bool save)
+{
+    std::wstring result;
+    IFileDialog* dlg = nullptr;
+    HRESULT hr = save ? CoCreateInstance(CLSID_FileSaveDialog, nullptr, CLSCTX_INPROC_SERVER,
+                                         IID_PPV_ARGS(&dlg))
+                      : CoCreateInstance(CLSID_FileOpenDialog, nullptr, CLSCTX_INPROC_SERVER,
+                                         IID_PPV_ARGS(&dlg));
+    if (FAILED(hr))
+        return result;
+    COMDLG_FILTERSPEC filter[] = {{L"RarBackuper profile (*.rbprofile)", L"*.rbprofile"},
+                                  {L"All files (*.*)", L"*.*"}};
+    dlg->SetFileTypes(2, filter);
+    dlg->SetDefaultExtension(L"rbprofile");
+    DWORD opts = 0;
+    dlg->GetOptions(&opts);
+    dlg->SetOptions(opts | FOS_FORCEFILESYSTEM);
+    if (SUCCEEDED(dlg->Show(owner)))
+    {
+        IShellItem* item = nullptr;
+        if (SUCCEEDED(dlg->GetResult(&item)))
+        {
+            PWSTR path = nullptr;
+            if (SUCCEEDED(item->GetDisplayName(SIGDN_FILESYSPATH, &path)))
+            {
+                result = path;
+                CoTaskMemFree(path);
+            }
+            item->Release();
+        }
+    }
+    dlg->Release();
+    return result;
+}
+
+}
+
+void MainWindow::OnSaveProfile()
+{
+    std::wstring path = PickProfilePath(hwnd_, true);
+    if (path.empty())
+        return;
+    std::wstring err;
+    if (engine::WriteFileUtf8(path, core::ConfigToJson(settings_.config), &err))
+        Log(engine::LogSeverity::Info, L"Profile saved to " + path);
+    else
+        Log(engine::LogSeverity::Error, L"Failed to save profile to " + path + L": " + err);
+}
+
+void MainWindow::OnLoadProfile()
+{
+    std::wstring path = PickProfilePath(hwnd_, false);
+    if (path.empty())
+        return;
+    std::string text;
+    std::wstring err;
+    if (!engine::ReadFileUtf8(path, text, &err))
+    {
+        Log(engine::LogSeverity::Error, L"Failed to read profile " + path + L": " + err);
+        return;
+    }
+    auto parsed = core::ConfigFromJson(text);
+    if (!parsed.ok)
+    {
+        Log(engine::LogSeverity::Error,
+            L"Profile " + path + L" is invalid (" + parsed.error + L") - configuration unchanged");
+        return;
+    }
+    settings_.config = std::move(parsed.config);
+    suppressPersist_ = true;
+    RefreshUiFromConfig();
+    suppressPersist_ = false;
+    PersistSettings();
+    Log(engine::LogSeverity::Info, L"Profile loaded from " + path);
+}
+
 // --- implemented in later tasks ---
-void MainWindow::OnSaveProfile() {}
-void MainWindow::OnLoadProfile() {}
 void MainWindow::OnBackupOrCancel() {}
 void MainWindow::StartBackup() {}
 void MainWindow::HandleCompleted(const engine::RunSummary&) {}

@@ -235,9 +235,9 @@ Layout (single page, top to bottom; resizable — log area absorbs extra height,
 
 **Files:** `src/win/MainWindow.*` (handlers), reuse `SettingsModel` validation
 
-- [ ] **Save profile…**: file save dialog (`*.rbprofile` filter); writes current configuration — folder list, backup name, destination, compression level, solid flag, exclude rules, time-capsule checkboxes — same JSON schema as `settings.json`. **Password never included.** Action logged.
-- [ ] **Load profile…**: file open dialog; validate (Task 4 rules); on success replace the current configuration, persist to `settings.json` immediately, refresh the entire UI. Invalid/unreadable file → `ERROR:` log line with the reason; current configuration untouched. Action logged.
-- [ ] Verify manually: save → modify UI → load → everything restored; load a corrupt file → error logged, nothing changed. Commit.
+- [x] **Save profile…**: file save dialog (`*.rbprofile` filter); writes current configuration — folder list, backup name, destination, compression level, solid flag, exclude rules, time-capsule checkboxes — same JSON schema as `settings.json`. **Password never included.** Action logged.
+- [x] **Load profile…**: file open dialog; validate (Task 4 rules); on success replace the current configuration, persist to `settings.json` immediately, refresh the entire UI. Invalid/unreadable file → `ERROR:` log line with the reason; current configuration untouched. Action logged.
+- [x] Verify manually: save → modify UI → load → everything restored; load a corrupt file → error logged, nothing changed. Commit.
 
 ## Task 9: RarRunner — the backup itself
 
