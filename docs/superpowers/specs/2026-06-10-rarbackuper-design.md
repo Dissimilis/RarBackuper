@@ -110,6 +110,76 @@ hand-made configuration or deliverables users want backed up.
   (level, solid, excludes count). Visible later in any WinRAR UI without
   extracting.
 
+## Time capsule features
+
+Optional extras that turn each backup into a snapshot of the machine, not
+just a copy of folders. Each is an independent checkbox in a "Time capsule"
+settings group (persisted like other settings). Generated content goes into a
+`_meta\` folder at the archive root.
+
+**Staging constraint:** meta files are staged in a temporary `_meta` subfolder
+created inside the *destination* folder (never `%TEMP%`), added to the
+archive, then deleted. This honors the no-temp-folder rule's intent: all I/O
+stays on the destination volume.
+
+### 1. System info (`_meta\system-info.txt`) — one checkbox
+
+- Machine passport: computer name, user, OS version/build, CPU, RAM,
+  BIOS/motherboard serials, uptime, timezone.
+- Drives map: every volume — letter, label, filesystem, total/free space,
+  volume serial number, BitLocker status.
+
+### 2. Full-system file inventory — one checkbox
+
+`_meta\filelist-<drive>.txt` per fixed drive: complete recursive listing
+(path, size, modified date) of the entire drive, not just backed-up folders.
+Inaccessible paths are skipped and counted, not fatal. Lets the user later
+discover the exact name/location/date of files that were never backed up.
+
+### 3. Browser bookmarks (`_meta\bookmarks\`) — one checkbox
+
+Auto-detects installed major browsers and copies their bookmark stores:
+Chrome (`%LOCALAPPDATA%\Google\Chrome\User Data\*\Bookmarks`), Edge
+(`%LOCALAPPDATA%\Microsoft\Edge\User Data\*\Bookmarks`), Firefox
+(`places.sqlite` per profile), Brave, Opera, Vivaldi (Chromium-pattern
+paths). Missing browsers are silently skipped; found ones are logged.
+
+### 4. Important Stuff auto-backup (`_meta\important\`) — one checkbox
+
+Scans well-known locations for small, hard-to-recreate files and includes
+every match, organized by category, plus a generated
+`_meta\important\manifest.txt` that explains for each found item: what it is,
+its original full path, and step-by-step restore instructions.
+
+Built as a curated, extensible **detector catalog** — each detector has a
+name, description, search paths/globs, per-file size cap, and a restore
+instruction template. Initial catalog:
+
+| Category | What is searched |
+|---|---|
+| SSH | `%USERPROFILE%\.ssh\*` (keys, config, known_hosts) |
+| Git | `.gitconfig`, `.git-credentials` |
+| Docker / K8s | `.docker\config.json`, `.kube\config` |
+| Cloud CLIs | `.aws\credentials`+`config`, `.azure\*` (small files) |
+| Package managers | `.npmrc`, `NuGet.Config` |
+| KeePass | `*.kdbx` in user profile, Documents, Desktop, OneDrive root |
+| Password managers | Bitwarden local `data.json`, 1Password local exports, LastPass exports if present |
+| Crypto wallets | Bitcoin `wallet.dat`, Electrum `wallets\*`, Exodus, MetaMask extension data (per browser profile) |
+| VPN | OpenVPN `config\*.ovpn`, WireGuard `*.conf` |
+| Certificates | `*.pfx`, `*.pem`, `*.p12` in user profile root, `.ssl`, Documents |
+| Remote access | `.ssh\config`, `Documents\Default.rdp`, PuTTY sessions (exported from registry to `putty-sessions.reg`) |
+| Sticky Notes | `plum.sqlite` (Windows Sticky Notes store) |
+
+Rules:
+
+- Per-file size cap (default 10 MB) keeps the promise of "small important
+  files"; oversized matches are listed in the manifest as *found but skipped*
+  with their path, so the user still learns they exist.
+- Every found/skipped item is logged.
+- **Password warning:** if Important Stuff is enabled and no archive password
+  is set, the app warns (log `WARN` + confirmation prompt) before starting,
+  since the archive will contain credentials and keys in plain form.
+
 ## Progress
 
 File-count progress: the pre-scan counts files in the selected folders
