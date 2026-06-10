@@ -18,19 +18,37 @@ real progress feedback, and a textual log of everything that happens.
 
 ## Architecture
 
-.NET MAUI application (Windows/WinUI3 target), single window. The app ships
-with the existing `WinRAR-x64` folder placed beside the executable and drives
-`Rar.exe` as a child process. No WinRAR installation is required on the
+Native Win32 C++ application (C++20, MSVC): a single small `.exe` with zero
+runtime dependencies — no .NET, no framework DLLs. The UI is a single main
+window built with the Windows API and common controls (ListView for the
+folder list, ComboBox, Edit, msctls_progress32 progress bar, read-only
+multiline Edit for the log), with a visual-styles manifest for modern
+control rendering and per-monitor DPI awareness.
+
+The app ships with the existing `WinRAR-x64` folder placed beside the
+executable and drives `Rar.exe` as a child process (`CreateProcess` with
+redirected stdout/stderr pipes). No WinRAR installation is required on the
 machine.
+
+Technical notes:
+
+- JSON (settings/profiles) via a single-header library (nlohmann/json)
+  compiled in — no external dependency at runtime.
+- Backups run on a worker thread; progress and log lines are delivered to
+  the UI thread via `PostMessage` (no UI blocking).
+- Folder/file pickers use `IFileDialog` (`FOS_PICKFOLDERS` for folders);
+  drag & drop via `WM_DROPFILES`.
+- All paths handled as wide strings (`std::wstring`, `W` APIs).
 
 ### Components
 
 | Component | Responsibility |
 |---|---|
-| `MainPage` (UI) | Single page: folder list, settings, Backup/Cancel button, progress bar, log area. |
-| `SettingsService` | Load/save `settings.json` next to the exe. Persists: folder list, backup name, destination, compression level, solid flag, exclude rules (type + value each). **Password is never persisted.** Settings save on change. |
-| `RarService` | Locates `Rar.exe` relative to the app folder; pre-scans source folders (honoring excludes) to count files; builds the command line; runs the process with redirected stdout/stderr; raises progress and log events; maps RAR exit codes to friendly messages. |
-| `LogService` | Append-only, timestamped (`HH:mm:ss`) log lines consumed by the UI log area. Written to by UI actions and `RarService`. All updates marshaled to the UI thread. |
+| `MainWindow` (UI) | Single window + WndProc: folder list, settings, Backup/Cancel button, progress bar, log area; exclude rules dialog. |
+| `Settings` | Load/save `settings.json` next to the exe (nlohmann/json). Persists: folder list, backup name, destination, compression level, solid flag, exclude rules (type + value each), time-capsule checkboxes. **Password is never persisted.** Settings save on change. |
+| `RarRunner` | Locates `Rar.exe` relative to the app folder; pre-scans source folders (honoring excludes) to count files; builds the command line; runs the process on a worker thread with redirected stdout/stderr; posts progress and log events to the UI thread; maps RAR exit codes to friendly messages. |
+| `Logger` | Append-only, timestamped (`HH:mm:ss`) log lines consumed by the UI log area. Written to by UI actions and `RarRunner`. All updates marshaled to the UI thread via `PostMessage`. |
+| `MetaCollector` | Generates the time-capsule content (`system-info.txt`, file inventories, bookmarks, Important Stuff detectors + manifest) in the destination-side `_meta` staging folder. |
 
 ## UI (single page)
 
@@ -121,9 +139,10 @@ hand-made configuration or deliverables users want backed up.
 
 - **Drag & drop** — dropping folders anywhere on the window adds them to the
   backup list.
-- **Completion toast + open destination** — a Windows toast notification fires
+- **Completion notification + open destination** — a Windows notification
+  (tray balloon via `Shell_NotifyIcon`, the simple native mechanism) fires
   when a backup finishes (success or error), and an "Open destination" button
-  appears next to the result, opening Explorer at the new archive.
+  appears next to the result, opening Explorer with the new archive selected.
 - **Archive comment stamp** — each archive gets an embedded RAR comment
   (`-z<file>`): machine name, date/time, the exact folder list, settings used
   (level, solid, excludes count). Visible later in any WinRAR UI without
@@ -245,5 +264,6 @@ progress bar, file label, and log update → completion or error displayed.
 ## Testing
 
 - Unit tests for the pure parts: command-line builder, stdout parser,
-  exclude-pattern handling, archive-name generation.
+  exclude-pattern handling, archive-name generation — built as a small
+  separate console test executable (single-header framework, e.g. doctest).
 - End-to-end verified manually with a real backup run.
