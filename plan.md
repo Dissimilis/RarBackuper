@@ -310,18 +310,18 @@ Layout (single page, top to bottom; resizable — log area absorbs extra height,
 
 Purpose (decision #5): make the whole app testable end-to-end from a terminal without touching the GUI.
 
-- [ ] When launched with arguments, the exe runs headless instead of opening the window. Console output must actually reach the invoking terminal/pipe even though this is a GUI-subsystem exe (`AttachConsole(ATTACH_PARENT_PROCESS)` or equivalent — verify output is capturable via redirection: `RarBackuper.exe backup ... > out.txt` works).
-- [ ] **`RarBackuper.exe backup`** — runs a backup using the current `settings.json`, exactly like pressing the Backup button (same validation, same engine, same time-capsule behavior per saved checkboxes). Options:
+- [x] When launched with arguments, the exe runs headless instead of opening the window. Console output must actually reach the invoking terminal/pipe even though this is a GUI-subsystem exe (`AttachConsole(ATTACH_PARENT_PROCESS)` or equivalent — verify output is capturable via redirection: `RarBackuper.exe backup ... > out.txt` works).
+- [x] **`RarBackuper.exe backup`** — runs a backup using the current `settings.json`, exactly like pressing the Backup button (same validation, same engine, same time-capsule behavior per saved checkboxes). Options:
   - `--profile <file.rbprofile>` — use this configuration instead of `settings.json` (validated the same way; does NOT overwrite `settings.json`);
   - `--password <pw>` — archive password for this run (CLI counterpart of the session-only password field);
   - `--dest <folder>`, `--name <name>` — override destination / backup name for this run;
   - `--no-capsule` — skip all time-capsule collection regardless of saved checkboxes (fast test runs);
   - `--yes` — auto-confirm prompts that would be interactive in the GUI (e.g. the Important-Stuff-without-password warning; without `--yes` that warning aborts the run in CLI mode).
-- [ ] CLI `EventSink` implementation: every log line to stdout (same content as the GUI log, including the masked command line and summary); progress as occasional `[n/total] <file>` lines (no control characters / no rewriting — output must stay clean when piped to a file).
-- [ ] **Exit codes**: 0 = success, 1 = completed with warnings, 2 = validation failure, 3 = backup failed (RAR error mapped in the log), 4 = cancelled (Ctrl+C — handle console control event with the same cleanup: kill Rar, delete partial archive, delete `_meta`).
-- [ ] `RarBackuper.exe --help` prints usage. Unknown args → usage + exit 2.
-- [ ] Hard constraints all still apply in CLI mode (password never persisted, masked in output; no `%TEMP%`; partial-archive cleanup).
-- [ ] Verify: run `RarBackuper.exe backup` from a terminal against a small folder; output streams live; exit code matches result; Ctrl+C cleans up. Commit.
+- [x] CLI `EventSink` implementation: every log line to stdout (same content as the GUI log, including the masked command line and summary); progress as occasional `[n/total] <file>` lines (no control characters / no rewriting — output must stay clean when piped to a file).
+- [x] **Exit codes**: 0 = success, 1 = completed with warnings, 2 = validation failure, 3 = backup failed (RAR error mapped in the log), 4 = cancelled (Ctrl+C — handle console control event with the same cleanup: kill Rar, delete partial archive, delete `_meta`).
+- [x] `RarBackuper.exe --help` prints usage. Unknown args → usage + exit 2.
+- [x] Hard constraints all still apply in CLI mode (password never persisted, masked in output; no `%TEMP%`; partial-archive cleanup).
+- [x] Verify: run `RarBackuper.exe backup` from a terminal against a small folder; output streams live; exit code matches result; Ctrl+C cleans up. Commit.
 
 ## Task 14: Integration tests with the real Rar.exe
 

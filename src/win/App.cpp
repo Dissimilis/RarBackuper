@@ -2,11 +2,26 @@
 
 #include <commctrl.h>
 #include <objbase.h>
+#include <shellapi.h>
 
+#include "cli/CliMain.h"
 #include "win/MainWindow.h"
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR, int nCmdShow)
 {
+    // Any command-line argument switches to headless mode (same engine, log
+    // lines to stdout, result as exit code).
+    int argc = 0;
+    wchar_t** argv = CommandLineToArgvW(GetCommandLineW(), &argc);
+    if (argv && argc > 1)
+    {
+        int rc = cli::RunCli(argc, argv);
+        LocalFree(argv);
+        return rc;
+    }
+    if (argv)
+        LocalFree(argv);
+
     if (FAILED(CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE)))
         return 1;
 
