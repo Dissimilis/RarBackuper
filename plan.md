@@ -185,13 +185,13 @@ Write failing tests first, then implement, for each unit:
 
 **Files:** `src/core/RarCommandLine.*`, `src/core/SettingsModel.*`, tests
 
-- [ ] **RarCommandLine**: from (rar path, config, archive path, optional comment-file path, optional password) build the full argv/command string:
+- [x] **RarCommandLine**: from (rar path, config, archive path, optional comment-file path, optional password) build the full argv/command string:
   - `a`, `-m<level>` (0/1/3/5 from Store/Fast/Normal/Best), `-s` iff solid, `-hp<password>` iff password set, `-rr1` always, `-z<commentfile>` iff provided (plus the charset switch decided in Task 10), every exclude as `-x<mask>`, `-y`, `--`, quoted archive path, quoted source folders.
   - **Never** emit `-w`.
   - Proper quoting of paths with spaces.
   - A second output: the **loggable** command string with `-hp***` masking. Test that the real password never appears in it.
-- [ ] **SettingsModel**: struct holding: folder list, backup name, destination, compression level, solid flag, exclude rules (type+value each), four time-capsule booleans (systemInfo, fileInventory, bookmarks, importantStuff). JSON serialize/deserialize (nlohmann, UTF-8 on disk ↔ wstring in memory). Round-trip test. **No password field exists in the persisted schema.**
-- [ ] **Profile validation** (same schema, used by Load profile…): malformed JSON, wrong types, or missing required fields → validation error with a reason string; unknown extra fields tolerated. Defaults for absent optional fields (fresh install: empty folders, name empty, level Normal, solid off, default excludes, all capsule boxes off).
+- [x] **SettingsModel**: struct holding: folder list, backup name, destination, compression level, solid flag, exclude rules (type+value each), four time-capsule booleans (systemInfo, fileInventory, bookmarks, importantStuff). JSON serialize/deserialize (nlohmann, UTF-8 on disk ↔ wstring in memory). Round-trip test. **No password field exists in the persisted schema.**
+- [x] **Profile validation** (same schema, used by Load profile…): malformed JSON, wrong types, or missing required fields → validation error with a reason string; unknown extra fields tolerated. Defaults for absent optional fields (fresh install: empty folders, name empty, level Normal, solid off, default excludes, all capsule boxes off).
 - [x] All tests pass. Commit.
 
 ## Task 5: Settings persistence + Logger + Rar discovery
