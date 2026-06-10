@@ -98,6 +98,18 @@ hand-made configuration or deliverables users want backed up.
   timestamped archive (never modifies an existing one), `Rar.exe` performs no
   temp-copy staging of its own.
 
+## Convenience features
+
+- **Drag & drop** — dropping folders anywhere on the window adds them to the
+  backup list.
+- **Completion toast + open destination** — a Windows toast notification fires
+  when a backup finishes (success or error), and an "Open destination" button
+  appears next to the result, opening Explorer at the new archive.
+- **Archive comment stamp** — each archive gets an embedded RAR comment
+  (`-z<file>`): machine name, date/time, the exact folder list, settings used
+  (level, solid, excludes count). Visible later in any WinRAR UI without
+  extracting.
+
 ## Progress
 
 File-count progress: the pre-scan counts files in the selected folders
