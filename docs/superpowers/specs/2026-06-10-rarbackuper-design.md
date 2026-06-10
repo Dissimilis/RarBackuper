@@ -126,8 +126,14 @@ stays on the destination volume.
 
 - Machine passport: computer name, user, OS version/build, CPU, RAM,
   BIOS/motherboard serials, uptime, timezone.
-- Drives map: every volume — letter, label, filesystem, total/free space,
-  volume serial number, BitLocker status.
+- Drives map with **full partition table detail** — enough information for
+  file recovery tools to locate data if a disk or partition table is later
+  damaged. Per physical disk: disk number, model, serial number, total size,
+  logical/physical sector size, partition style (GPT/MBR). Per partition:
+  index, partition type GUID and unique partition GUID (or MBR type byte),
+  starting offset in bytes, size in bytes, drive letter, filesystem, cluster
+  size, volume serial number, label, BitLocker status. Sourced from Windows
+  storage WMI/CIM (`MSFT_Disk`/`MSFT_Partition`/`MSFT_Volume`).
 
 ### 2. Full-system file inventory — one checkbox
 
@@ -151,24 +157,40 @@ every match, organized by category, plus a generated
 `_meta\important\manifest.txt` that explains for each found item: what it is,
 its original full path, and step-by-step restore instructions.
 
-Built as a curated, extensible **detector catalog** — each detector has a
-name, description, search paths/globs, per-file size cap, and a restore
-instruction template. Initial catalog:
+Built as a curated, extensible **detector catalog**. Each detector has a
+name, description, per-file size cap, restore instruction template, and one
+of three kinds:
 
-| Category | What is searched |
+- **file glob** — search well-known paths/patterns and copy matches;
+- **registry export** — export a registry key to a `.reg` file;
+- **command output** — run a command and capture its output as a text file
+  (skipped silently if the tool is not installed).
+
+Initial catalog, grouped:
+
+| Group | Detectors |
 |---|---|
-| SSH | `%USERPROFILE%\.ssh\*` (keys, config, known_hosts) |
-| Git | `.gitconfig`, `.git-credentials` |
-| Docker / K8s | `.docker\config.json`, `.kube\config` |
-| Cloud CLIs | `.aws\credentials`+`config`, `.azure\*` (small files) |
-| Package managers | `.npmrc`, `NuGet.Config` |
-| KeePass | `*.kdbx` in user profile, Documents, Desktop, OneDrive root |
-| Password managers | Bitwarden local `data.json`, 1Password local exports, LastPass exports if present |
+| Passwords & vaults | KeePass `*.kdbx` + key files (`*.keyx`, `*.key` beside vaults) in user profile, Documents, Desktop, OneDrive root; Bitwarden local `data.json` |
+| Keys & certificates | `%USERPROFILE%\.ssh\*` (keys, config, known_hosts); GPG keyrings (`%APPDATA%\gnupg`); age keys (`.config\age`); `*.pfx`, `*.p12`, `*.pem` in profile root, `.ssl`, Documents |
 | Crypto wallets | Bitcoin `wallet.dat`, Electrum `wallets\*`, Exodus, MetaMask extension data (per browser profile) |
-| VPN | OpenVPN `config\*.ovpn`, WireGuard `*.conf` |
-| Certificates | `*.pfx`, `*.pem`, `*.p12` in user profile root, `.ssl`, Documents |
-| Remote access | `.ssh\config`, `Documents\Default.rdp`, PuTTY sessions (exported from registry to `putty-sessions.reg`) |
+| VPN & remote access | OpenVPN `config\*.ovpn`; WireGuard `*.conf`; `*.rdp` in Documents/Desktop; PuTTY sessions (registry export); WinSCP (`WinSCP.ini` + registry export); FileZilla `sitemanager.xml`; MobaXterm.ini; mRemoteNG `confCons.xml`; Royal TS `*.rtsz` |
+| Developer credentials | `.aws\credentials`+`config`; `.azure` (small files); gcloud config; `.kube\config`; `.docker\config.json`; GitHub CLI `hosts.yml`; Terraform `credentials.tfrc.json`; Pulumi `credentials.json`; rclone `rclone.conf` |
+| Git & dev identity | `.gitconfig`, global gitignore, `.git-credentials`, `.npmrc`, `NuGet.Config` |
+| IDE & editor settings | VS Code `settings.json`, `keybindings.json`, snippets, extension list (`code --list-extensions`); JetBrains user options; Notepad++ config; `_vimrc`/nvim config; Sublime user settings |
+| Shell & terminal | PowerShell profiles; Windows Terminal `settings.json`; `.bashrc`/`.zshrc` if present; `starship.toml`; Oh My Posh themes; `.wslconfig` |
+| Email essentials | Outlook signatures (`%APPDATA%\Microsoft\Signatures`); Thunderbird `profiles.ini` + per-profile `prefs.js` (account config, not mail stores) |
+| Notes apps | Obsidian `obsidian.json` (vault registry) + per-vault `.obsidian` configs; Joplin settings |
+| App configs | OBS profiles & scene collections; qBittorrent config; Syncthing config; 3D-slicer profiles (PrusaSlicer/Cura) |
+| Windows recovery info | Installed programs (registry uninstall keys); `winget`/`choco`/`scoop` list outputs; services list; scheduled tasks export; environment variables + PATH; hosts file; mapped drives; `ipconfig /all`; Wi-Fi profiles incl. keys (`netsh wlan export profile key=clear`); printer list |
 | Sticky Notes | `plum.sqlite` (Windows Sticky Notes store) |
+
+Deliberately **excluded** as unreliable or out of scope: finance/legal/identity
+document scans (normal backup content, not pattern-detectable), game saves
+and emulator saves (size), Telegram/Signal data (large encrypted stores),
+homelab server configs (live on other machines), "recovery codes" and
+password export CSVs (no detectable signature), project-level files like
+solutions/Dockerfiles/lock files (belong in the user's selected backup
+folders, not auto-detection).
 
 Rules:
 
