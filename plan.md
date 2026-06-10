@@ -210,17 +210,17 @@ Write failing tests first, then implement, for each unit:
 
 Layout (single page, top to bottom; resizable — log area absorbs extra height, sensible minimum size):
 
-- [ ] **Folder list** (ListView) + `Add` (IFileDialog with `FOS_PICKFOLDERS`) + `Remove` buttons. No duplicate entries.
-- [ ] **Backup name** Edit; **Destination** read-only path display + `Browse…` (folder picker).
-- [ ] **Quick settings row**: compression ComboBox (Store/Fast/Normal/Best), `Solid archive` checkbox, password Edit (`ES_PASSWORD`; session-only, never saved), excludes summary label `Excludes [ N rules ]` + `Edit…` button (opens Task 7 dialog; N stays current).
-- [ ] **Save profile… / Load profile…** buttons (logic in Task 8).
-- [ ] **Time capsule** group: four checkboxes — System info, Full-system file inventory, Browser bookmarks, Important Stuff.
-- [ ] **Backup** button (large/prominent) — becomes **Cancel** while a run is active; all settings controls disabled during a run.
-- [ ] **Progress bar** (`msctls_progress32`) + current-file label beside/under it.
-- [ ] **Log area**: large read-only multiline Edit, bottom of window, auto-scrolls to newest line, receives all Logger output.
-- [ ] Every settings-affecting change immediately persists via Settings (Task 5) and logs nothing per-keystroke spammy (persist on change; debounce text fields on focus-loss/idle is acceptable).
-- [ ] **Drag & drop**: `WM_DROPFILES` anywhere on the window — dropped *folders* are added to the list (files ignored or logged as skipped).
-- [ ] Verify manually at 100% and 150%+ DPI: themed controls, layout sane, resize works, drag & drop adds a folder, all values survive app restart. Commit.
+- [x] **Folder list** (ListView) + `Add` (IFileDialog with `FOS_PICKFOLDERS`) + `Remove` buttons. No duplicate entries.
+- [x] **Backup name** Edit; **Destination** read-only path display + `Browse…` (folder picker).
+- [x] **Quick settings row**: compression ComboBox (Store/Fast/Normal/Best), `Solid archive` checkbox, password Edit (`ES_PASSWORD`; session-only, never saved), excludes summary label `Excludes [ N rules ]` + `Edit…` button (opens Task 7 dialog; N stays current).
+- [x] **Save profile… / Load profile…** buttons (logic in Task 8).
+- [x] **Time capsule** group: four checkboxes — System info, Full-system file inventory, Browser bookmarks, Important Stuff.
+- [x] **Backup** button (large/prominent) — becomes **Cancel** while a run is active; all settings controls disabled during a run.
+- [x] **Progress bar** (`msctls_progress32`) + current-file label beside/under it.
+- [x] **Log area**: large read-only multiline Edit, bottom of window, auto-scrolls to newest line, receives all Logger output.
+- [x] Every settings-affecting change immediately persists via Settings (Task 5) and logs nothing per-keystroke spammy (persist on change; debounce text fields on focus-loss/idle is acceptable).
+- [x] **Drag & drop**: `WM_DROPFILES` anywhere on the window — dropped *folders* are added to the list (files ignored or logged as skipped).
+- [x] Verify manually at 100% and 150%+ DPI: themed controls, layout sane, resize works, drag & drop adds a folder, all values survive app restart. Commit.
 
 ## Task 7: Exclude rules dialog
 
