@@ -329,15 +329,15 @@ Purpose (decision #5): make the whole app testable end-to-end from a terminal wi
 
 Tests locate `WinRAR-x64\Rar.exe` via RarDiscovery logic relative to the repo root; each test builds a tiny fixture tree in a per-test temp dir **under the build directory** (the no-%TEMP% rule is an app constraint about backup data flow, not a test-fixture concern — but keeping fixtures in `build/` is tidier anyway), runs the real process, and inspects results (list archive contents via `UnRAR.exe l` or extraction):
 
-- [ ] Archive gets created with the expected name and contains the fixture files (verifies folder-argument recursion — see "Recursion note").
-- [ ] Exclude masks work end-to-end: a fixture with `node_modules\x.js`, `Thumbs.db`, `a.log` + rules (bare folder, bare file, `*.log` pattern) → none of them in the archive; included files are.
-- [ ] Password: `-hp` archive can't list without password, lists with it.
-- [ ] Exit code 0 on success; a forced failure (e.g. nonexistent source) yields the expected non-zero code and the mapped message.
-- [ ] Kill-mid-run leaves a partial file that the cleanup path deletes (simulate the cancel sequence).
-- [ ] Comment file round-trips (create with `-z`, read back, non-ASCII content intact).
-- [ ] Pre-scan count equals the number of files RAR actually adds for the same fixture+rules (locks parser + matcher + RAR semantics together).
-- [ ] **End-to-end via the CLI** (Task 13): invoke the built `RarBackuper.exe backup --profile <fixture profile> --no-capsule ...` from the test (or a script) against a fixture tree; assert exit code, stdout content (masked command line, summary), and the produced archive. This is the primary automated whole-app test path.
-- [ ] All tests pass via `build\rarbackuper_tests.exe`. Commit.
+- [x] Archive gets created with the expected name and contains the fixture files (verifies folder-argument recursion — see "Recursion note").
+- [x] Exclude masks work end-to-end: a fixture with `node_modules\x.js`, `Thumbs.db`, `a.log` + rules (bare folder, bare file, `*.log` pattern) → none of them in the archive; included files are.
+- [x] Password: `-hp` archive can't list without password, lists with it.
+- [x] Exit code 0 on success; a forced failure (e.g. nonexistent source) yields the expected non-zero code and the mapped message.
+- [x] Kill-mid-run leaves a partial file that the cleanup path deletes (simulate the cancel sequence).
+- [x] Comment file round-trips (create with `-z`, read back, non-ASCII content intact).
+- [x] Pre-scan count equals the number of files RAR actually adds for the same fixture+rules (locks parser + matcher + RAR semantics together).
+- [x] **End-to-end via the CLI** (Task 13): invoke the built `RarBackuper.exe backup --profile <fixture profile> --no-capsule ...` from the test (or a script) against a fixture tree; assert exit code, stdout content (masked command line, summary), and the produced archive. This is the primary automated whole-app test path.
+- [x] All tests pass via `build\rarbackuper_tests.exe`. Commit.
 
 ## Task 15: Final verification & polish
 

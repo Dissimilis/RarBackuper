@@ -1,4 +1,5 @@
 build/
 WinRAR-x64/
 settings.json
+test_fixtures/
 .serena/

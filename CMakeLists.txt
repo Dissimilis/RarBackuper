@@ -64,12 +64,11 @@ add_executable(rarbackuper_tests
     tests/test_discovery_settings.cpp
     tests/test_integration_rar.cpp
     ${CORE_SOURCES}
-    src/engine/RarDiscovery.cpp
-    src/engine/Settings.cpp
+    ${ENGINE_SOURCES}
 )
 target_include_directories(rarbackuper_tests PRIVATE src third_party)
 target_compile_definitions(rarbackuper_tests PRIVATE UNICODE _UNICODE NOMINMAX WIN32_LEAN_AND_MEAN _WIN32_WINNT=0x0A00 WINVER=0x0A00)
-target_link_libraries(rarbackuper_tests PRIVATE shlwapi)
+target_link_libraries(rarbackuper_tests PRIVATE shlwapi ole32 oleaut32 uuid advapi32 wbemuuid)
 
 if(MINGW)
     target_link_options(rarbackuper_tests PRIVATE -static)
