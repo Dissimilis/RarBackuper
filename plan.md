@@ -161,25 +161,25 @@ Keep `src/core` free of UI/Win32 dependencies (filesystem/process APIs allowed o
 
 Write failing tests first, then implement, for each unit:
 
-- [ ] **ArchiveName**: given name `Docs` and a fixed timestamp → `Docs_2026-06-10_0930.rar`; full path = destination + filename. Time is a parameter (no hidden clock) so tests are deterministic. Decide and test behavior for characters invalid in filenames in the backup name (sanitize or reject — pick one, log it).
-- [ ] **RarExitCodes**: full table above → friendly message per code; unknown codes get a generic "unknown exit code N" message. Code 0 success; 1 maps to a warning, not failure; 255 = user cancel.
-- [ ] **RarOutputParser**: feed raw chunks (arbitrary split points, CRLF and LF) → reassembled lines; recognizes `Adding` lines and extracts the file path being added (tolerate leading whitespace, trailing `OK`/percentage artifacts); other lines pass through as plain log lines. Must be incremental (stateful) since pipe reads arrive in arbitrary chunks.
-- [ ] Run `build\rarbackuper_tests.exe` — all pass. Commit.
+- [x] **ArchiveName**: given name `Docs` and a fixed timestamp → `Docs_2026-06-10_0930.rar`; full path = destination + filename. Time is a parameter (no hidden clock) so tests are deterministic. Decide and test behavior for characters invalid in filenames in the backup name (sanitize or reject — pick one, log it).
+- [x] **RarExitCodes**: full table above → friendly message per code; unknown codes get a generic "unknown exit code N" message. Code 0 success; 1 maps to a warning, not failure; 255 = user cancel.
+- [x] **RarOutputParser**: feed raw chunks (arbitrary split points, CRLF and LF) → reassembled lines; recognizes `Adding` lines and extracts the file path being added (tolerate leading whitespace, trailing `OK`/percentage artifacts); other lines pass through as plain log lines. Must be incremental (stateful) since pipe reads arrive in arbitrary chunks.
+- [x] Run `build\rarbackuper_tests.exe` — all pass. Commit.
 
 ## Task 3: Pure core — exclude rules (TDD)
 
 **Files:** `src/core/ExcludeRules.*`, `tests/test_exclude_rules.cpp`
 
-- [ ] Rule model: `{ type: folder|file|pattern, value: wstring }`.
-- [ ] **Default rule set** (exact list, types: all `folder` unless noted):
+- [x] Rule model: `{ type: folder|file|pattern, value: wstring }`.
+- [x] **Default rule set** (exact list, types: all `folder` unless noted):
   - VCS internals: `.git`, `.svn`, `.hg`
   - Dependency dirs: `node_modules`, `.venv`, `venv`, `packages`
   - Build outputs/caches: `bin`, `obj`, `.vs`, `__pycache__`, `target`, and pattern `*.pyc`
   - OS & temp junk: files `Thumbs.db`, `desktop.ini`; patterns `*.tmp`, `~$*`; folders `$RECYCLE.BIN`, `System Volume Information`
   - Deliberately NOT excluded (do not add): `.vscode`, `.idea`, `dist`
-- [ ] **Translation to `-x` switches** per the table in "Key RAR facts" (bare folder → `-x*\name\`, bare file → `-x*\name`, full paths verbatim, patterns as-is). Test every rule type and both bare/full-path forms.
-- [ ] **Local matching** for the pre-scan file counter: given a file's full path, decide excluded/included with semantics mirroring the masks (case-insensitive, matches RAR's behavior for the supported rule forms; wildcard `*`/`?` matcher for patterns). Test: `C:\src\proj\node_modules\x\y.js` excluded by bare folder `node_modules`; `C:\a\Thumbs.db` excluded by bare file; `*.log` pattern excludes any `.log` anywhere; full-path folder rule excludes only that path.
-- [ ] All tests pass. Commit.
+- [x] **Translation to `-x` switches** per the table in "Key RAR facts" (bare folder → `-x*\name\`, bare file → `-x*\name`, full paths verbatim, patterns as-is). Test every rule type and both bare/full-path forms.
+- [x] **Local matching** for the pre-scan file counter: given a file's full path, decide excluded/included with semantics mirroring the masks (case-insensitive, matches RAR's behavior for the supported rule forms; wildcard `*`/`?` matcher for patterns). Test: `C:\src\proj\node_modules\x\y.js` excluded by bare folder `node_modules`; `C:\a\Thumbs.db` excluded by bare file; `*.log` pattern excludes any `.log` anywhere; full-path folder rule excludes only that path.
+- [x] All tests pass. Commit.
 
 ## Task 4: Pure core — command-line builder & settings model (TDD)
 
@@ -192,7 +192,7 @@ Write failing tests first, then implement, for each unit:
   - A second output: the **loggable** command string with `-hp***` masking. Test that the real password never appears in it.
 - [ ] **SettingsModel**: struct holding: folder list, backup name, destination, compression level, solid flag, exclude rules (type+value each), four time-capsule booleans (systemInfo, fileInventory, bookmarks, importantStuff). JSON serialize/deserialize (nlohmann, UTF-8 on disk ↔ wstring in memory). Round-trip test. **No password field exists in the persisted schema.**
 - [ ] **Profile validation** (same schema, used by Load profile…): malformed JSON, wrong types, or missing required fields → validation error with a reason string; unknown extra fields tolerated. Defaults for absent optional fields (fresh install: empty folders, name empty, level Normal, solid off, default excludes, all capsule boxes off).
-- [ ] All tests pass. Commit.
+- [x] All tests pass. Commit.
 
 ## Task 5: Settings persistence + Logger + Rar discovery
 
