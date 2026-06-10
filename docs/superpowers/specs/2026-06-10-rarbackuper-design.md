@@ -28,7 +28,7 @@ machine.
 | Component | Responsibility |
 |---|---|
 | `MainPage` (UI) | Single page: folder list, settings, Backup/Cancel button, progress bar, log area. |
-| `SettingsService` | Load/save `settings.json` next to the exe. Persists: folder list, backup name, destination, compression level, solid flag, exclude patterns. **Password is never persisted.** Settings save on change. |
+| `SettingsService` | Load/save `settings.json` next to the exe. Persists: folder list, backup name, destination, compression level, solid flag, exclude rules (type + value each). **Password is never persisted.** Settings save on change. |
 | `RarService` | Locates `Rar.exe` relative to the app folder; pre-scans source folders (honoring excludes) to count files; builds the command line; runs the process with redirected stdout/stderr; raises progress and log events; maps RAR exit codes to friendly messages. |
 | `LogService` | Append-only, timestamped (`HH:mm:ss`) log lines consumed by the UI log area. Written to by UI actions and `RarService`. All updates marshaled to the UI thread. |
 
@@ -38,9 +38,8 @@ machine.
 - **Backup name** text box; **destination** folder picker.
 - **Quick settings**: compression level (Store/Fast/Normal/Best → `-m0/-m1/-m3/-m5`),
   Solid archive toggle (`-s`), password field (when set, contents are always
-  encrypted via `-hp`), editable exclude pattern list pre-filled with strong
-  defaults: `node_modules`, `.git`, `bin`, `obj`, `*.tmp`, `Thumbs.db`,
-  `desktop.ini`.
+  encrypted via `-hp`), excludes summary (`Excludes [ N rules ] [ Edit… ]`)
+  opening the exclude rules dialog.
 - **Backup button** — becomes **Cancel** while a backup runs.
 - **Progress bar** + current-file label.
 - **Log output area** — large read-only scrollable text area in the lower part
@@ -52,6 +51,39 @@ machine.
   - errors/warnings with `ERROR:` / `WARN:` prefixes: validation failures,
     RAR exit-code messages, cancellation notices.
 
+## Exclude rules dialog
+
+A dedicated dialog for comfortable editing of exclude rules. Each rule has a
+type:
+
+- **folder** — added via system folder picker or typed as a bare name;
+  a full path excludes that specific folder, a bare name (e.g.
+  `node_modules`) excludes any folder with that name anywhere in the sources;
+- **file** — added via system file picker or typed as a bare name
+  (e.g. `Thumbs.db`); same path-vs-name semantics as folders;
+- **pattern** — manually entered wildcard mask (e.g. `*.log`, `*\cache\*`).
+
+Dialog controls: rule list (rule + type columns), `Add folder…`, `Add file…`,
+`Add pattern` (text entry), `Remove`, and **Restore defaults** (resets to the
+built-in list after a confirmation prompt), plus OK/Cancel.
+
+Rules are translated to `Rar.exe -x<mask>` switches when building the command
+line.
+
+### Default exclude rules
+
+Strong, thoughtful defaults targeting regenerable and junk data:
+
+| Group | Rules |
+|---|---|
+| VCS internals | `.git`, `.svn`, `.hg` |
+| Dependency dirs | `node_modules`, `.venv`, `venv`, `packages` |
+| Build outputs / caches | `bin`, `obj`, `.vs`, `__pycache__`, `*.pyc`, `target` |
+| OS & temp junk | `Thumbs.db`, `desktop.ini`, `*.tmp`, `~$*`, `$RECYCLE.BIN`, `System Volume Information` |
+
+Deliberately **not** excluded: `.vscode`, `.idea`, `dist` — these may contain
+hand-made configuration or deliverables users want backed up.
+
 ## Backup behavior
 
 - Archive name: `<BackupName>_<yyyy-MM-dd_HHmm>.rar`, created in the chosen
@@ -60,6 +92,11 @@ machine.
 - Recovery record is always added: `-rr1` (1%).
 - Command shape:
   `Rar.exe a -m<level> [-s] [-hp<password>] -rr1 -x<pattern>… -y -- "<dest>\<name>_<stamp>.rar" "<folder1>" "<folder2>" …`
+- **No temporary folders.** The archive is written directly to the
+  destination path. The `-w` (work directory) switch is never passed, and the
+  app never stages data in `%TEMP%`. Because each run creates a brand-new
+  timestamped archive (never modifies an existing one), `Rar.exe` performs no
+  temp-copy staging of its own.
 
 ## Progress
 
