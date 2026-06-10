@@ -40,6 +40,7 @@ machine.
   Solid archive toggle (`-s`), password field (when set, contents are always
   encrypted via `-hp`), excludes summary (`Excludes [ N rules ] [ Edit… ]`)
   opening the exclude rules dialog.
+- **Save profile… / Load profile…** buttons (see Save / load profile).
 - **Backup button** — becomes **Cancel** while a backup runs.
 - **Progress bar** + current-file label.
 - **Log output area** — large read-only scrollable text area in the lower part
@@ -50,6 +51,24 @@ machine.
   - completion summary: elapsed time, final archive size, success confirmation;
   - errors/warnings with `ERROR:` / `WARN:` prefixes: validation failures,
     RAR exit-code messages, cancellation notices.
+
+## Save / load profile
+
+The app keeps a single active configuration (`settings.json`), but it can be
+exported and imported as a **profile file**:
+
+- **Save profile…** — file save dialog; writes the current configuration
+  (folder list, backup name, destination, compression level, solid flag,
+  exclude rules, time-capsule checkboxes) to a chosen `*.rbprofile` file
+  (JSON, same schema as `settings.json`). The password is never included.
+- **Load profile…** — file open dialog; validates the file, replaces the
+  current configuration, persists it to `settings.json` immediately, and
+  refreshes the whole UI. Invalid or unreadable files are rejected with an
+  `ERROR:` log line and the current configuration stays untouched.
+- Both actions are logged.
+
+Use cases: moving the setup to another machine, keeping alternative setups
+(e.g. "work" vs "photos") on disk without full multi-profile UI.
 
 ## Exclude rules dialog
 
