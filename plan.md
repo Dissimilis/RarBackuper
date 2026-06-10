@@ -198,10 +198,10 @@ Write failing tests first, then implement, for each unit:
 
 **Files:** `src/engine/Settings.*`, `src/engine/EventSink.h`, `src/win/Logger.*`, `src/engine/RarDiscovery.*`, wire into `App.cpp`/`MainWindow`
 
-- [ ] **Settings**: load `settings.json` from the exe's directory at startup (missing/corrupt file → defaults + log line, never crash); save on every change (each UI mutation persists immediately). Log "settings loaded"/"saved".
-- [ ] **EventSink** (`src/engine/EventSink.h`): abstract interface the engine emits through — log line (with severity info/warn/error), progress (done/total), current file, state change (idle/collecting/archiving), completion (exit status + summary data). The GUI and CLI each implement it; the engine never touches a window or stdout directly.
-- [ ] **Logger** (GUI sink): append-only timestamped lines `HH:mm:ss  <text>`; `ERROR:` / `WARN:` prefixes for errors/warnings; thread-safe — any thread may log; delivery to the UI log control only via `PostMessage` (heap-allocated string handed to the UI thread, freed there).
-- [ ] **RarDiscovery**: at startup, depth-limited (3 levels) recursive, case-insensitive search for `rar.exe` in (1) the exe's directory, then (2) the CWD if different; first match wins; full path logged. Not found → Backup button disabled + `ERROR:` line listing exactly what was searched. Same mechanism for `UnRAR.exe` where needed later.
+- [x] **Settings**: load `settings.json` from the exe's directory at startup (missing/corrupt file → defaults + log line, never crash); save on every change (each UI mutation persists immediately). Log "settings loaded"/"saved".
+- [x] **EventSink** (`src/engine/EventSink.h`): abstract interface the engine emits through — log line (with severity info/warn/error), progress (done/total), current file, state change (idle/collecting/archiving), completion (exit status + summary data). The GUI and CLI each implement it; the engine never touches a window or stdout directly.
+- [x] **Logger** (GUI sink): append-only timestamped lines `HH:mm:ss  <text>`; `ERROR:` / `WARN:` prefixes for errors/warnings; thread-safe — any thread may log; delivery to the UI log control only via `PostMessage` (heap-allocated string handed to the UI thread, freed there).
+- [x] **RarDiscovery**: at startup, depth-limited (3 levels) recursive, case-insensitive search for `rar.exe` in (1) the exe's directory, then (2) the CWD if different; first match wins; full path logged. Not found → Backup button disabled + `ERROR:` line listing exactly what was searched. Same mechanism for `UnRAR.exe` where needed later.
 - [ ] Verify manually: app start logs app-start line, settings line, and the discovered `...\WinRAR-x64\Rar.exe` path. Commit.
 
 ## Task 6: Main window UI

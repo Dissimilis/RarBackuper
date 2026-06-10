@@ -61,9 +61,11 @@ add_executable(rarbackuper_tests
     tests/test_exit_codes.cpp
     tests/test_settings_model.cpp
     tests/test_detector_catalog.cpp
+    tests/test_discovery_settings.cpp
     tests/test_integration_rar.cpp
     ${CORE_SOURCES}
     src/engine/RarDiscovery.cpp
+    src/engine/Settings.cpp
 )
 target_include_directories(rarbackuper_tests PRIVATE src third_party)
 target_compile_definitions(rarbackuper_tests PRIVATE UNICODE _UNICODE NOMINMAX WIN32_LEAN_AND_MEAN)
