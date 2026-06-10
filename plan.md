@@ -275,14 +275,14 @@ Layout (single page, top to bottom; resizable — log area absorbs extra height,
 
 **Files:** `src/core/DetectorCatalog.*` (declarative data), `src/engine/detectors/*` (executors), `src/engine/MetaCollector.*`
 
-- [ ] **Framework**: each detector = { name, description, category/group, per-file size cap (default 10 MB), restore-instruction template, kind }. Three kinds:
+- [x] **Framework**: each detector = { name, description, category/group, per-file size cap (default 10 MB), restore-instruction template, kind }. Three kinds:
   - **file glob** — search well-known paths/patterns, copy matches into `_meta\important\<group>\...` preserving enough path context to disambiguate;
   - **registry export** — export a registry key to a `.reg` file (e.g. via `reg.exe export` or RegSaveKey-style API — graceful skip if inaccessible);
   - **command output** — run a command, capture stdout to a text file; **silently skipped if the tool isn't installed** (resolve via PATH lookup).
-- [ ] **Manifest** `_meta\important\manifest.txt`: for every found item — what it is (name+description), original full path, step-by-step restore instructions (from the template). Oversized matches (> size cap) listed as *found but skipped* with their path. Detectors that hit permission limits note the limitation. Every found/skipped item also logged.
-- [ ] **Password warning**: if Important Stuff is enabled and no archive password is set → log `WARN:` and show a confirmation prompt before starting (the archive will contain credentials/keys in plain form); user can proceed or abort.
-- [ ] **Elevation rule**: never request admin. Detectors needing it (Wi-Fi `key=clear`, protected registry/system areas) collect what's accessible and record the limitation in manifest+log. If the user launched the app elevated themselves, they naturally collect full data.
-- [ ] **Full catalog** (all groups; expand env vars; `*` = glob):
+- [x] **Manifest** `_meta\important\manifest.txt`: for every found item — what it is (name+description), original full path, step-by-step restore instructions (from the template). Oversized matches (> size cap) listed as *found but skipped* with their path. Detectors that hit permission limits note the limitation. Every found/skipped item also logged.
+- [x] **Password warning**: if Important Stuff is enabled and no archive password is set → log `WARN:` and show a confirmation prompt before starting (the archive will contain credentials/keys in plain form); user can proceed or abort.
+- [x] **Elevation rule**: never request admin. Detectors needing it (Wi-Fi `key=clear`, protected registry/system areas) collect what's accessible and record the limitation in manifest+log. If the user launched the app elevated themselves, they naturally collect full data.
+- [x] **Full catalog** (all groups; expand env vars; `*` = glob):
 
 | Group | Detectors |
 |---|---|
@@ -300,9 +300,9 @@ Layout (single page, top to bottom; resizable — log area absorbs extra height,
 | Windows recovery info | Installed programs (registry export of `HKLM\...\Uninstall` + `HKCU\...\Uninstall` — or text dump if export blocked); command outputs: `winget list`, `choco list`, `scoop list` (each skipped if absent); services list (`sc query` or WMI dump); scheduled tasks export (`schtasks /query /xml`); environment variables + PATH dump; hosts file copy (`%SystemRoot%\System32\drivers\etc\hosts`); mapped drives (`net use` output); `ipconfig /all`; Wi-Fi profiles incl. keys (`netsh wlan export profile key=clear` — degrades without elevation: profiles export but keys omitted; note in manifest); printer list |
 | Sticky Notes | `plum.sqlite` (`%LOCALAPPDATA%\Packages\Microsoft.MicrosoftStickyNotes_*\LocalState`) |
 
-- [ ] **Deliberately excluded** (do not implement, documented so nobody "helpfully" adds them): finance/legal/identity document scans, game/emulator saves, Telegram/Signal data, homelab server configs, recovery-code/password-export CSVs, project-level files (solutions/Dockerfiles/lock files).
-- [ ] Catalog entries are **data** (declarative table in `src/core/DetectorCatalog.cpp`) so the unit tests can verify catalog completeness (all 13 groups present, every entry has name/description/kind/restore template) without touching the filesystem.
-- [ ] Verify manually on this machine: run with Important Stuff on, inspect `_meta\important\` + manifest in the archive; confirm size-cap skips and not-installed-tool skips behave. Commit.
+- [x] **Deliberately excluded** (do not implement, documented so nobody "helpfully" adds them): finance/legal/identity document scans, game/emulator saves, Telegram/Signal data, homelab server configs, recovery-code/password-export CSVs, project-level files (solutions/Dockerfiles/lock files).
+- [x] Catalog entries are **data** (declarative table in `src/core/DetectorCatalog.cpp`) so the unit tests can verify catalog completeness (all 13 groups present, every entry has name/description/kind/restore template) without touching the filesystem.
+- [x] Verify manually on this machine: run with Important Stuff on, inspect `_meta\important\` + manifest in the archive; confirm size-cap skips and not-installed-tool skips behave. Commit.
 
 ## Task 13: Headless command-line mode
 
