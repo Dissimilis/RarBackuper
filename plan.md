@@ -255,10 +255,10 @@ Layout (single page, top to bottom; resizable — log area absorbs extra height,
 
 **Files:** `src/engine/RarRunner.*` (comment), `src/win/MainWindow.*` (notify/open)
 
-- [ ] **Archive comment** (`-z<file>`): before launch, write a comment file containing machine name, date/time, the exact folder list, and settings used (level, solid, excludes count). Encoding must round-trip non-ASCII (use `-sc` charset switch, e.g. UTF-8 `F` for comment objects — verify in WinRAR UI). The comment file is written **inside the destination `_meta` staging area or destination folder** (never `%TEMP%` — the no-temp rule applies) and deleted after the run.
-- [ ] **Completion notification**: tray balloon via `Shell_NotifyIcon` on finish (success or error) with an appropriate message. Tray icon may be added transiently for the balloon and removed after.
-- [ ] **Open destination**: after completion, an `Open destination` button/link appears near the result; opens Explorer with the new archive **selected** (`SHOpenFolderAndSelectItems`).
-- [ ] Verify manually (check comment shows in WinRAR's archive info). Commit.
+- [x] **Archive comment** (`-z<file>`): before launch, write a comment file containing machine name, date/time, the exact folder list, and settings used (level, solid, excludes count). Encoding must round-trip non-ASCII (use `-sc` charset switch, e.g. UTF-8 `F` for comment objects — verify in WinRAR UI). The comment file is written **inside the destination `_meta` staging area or destination folder** (never `%TEMP%` — the no-temp rule applies) and deleted after the run.
+- [x] **Completion notification**: tray balloon via `Shell_NotifyIcon` on finish (success or error) with an appropriate message. Tray icon may be added transiently for the balloon and removed after.
+- [x] **Open destination**: after completion, an `Open destination` button/link appears near the result; opens Explorer with the new archive **selected** (`SHOpenFolderAndSelectItems`).
+- [x] Verify manually (check comment shows in WinRAR's archive info). Commit.
 
 ## Task 11: Time capsule — staging, system info, file inventory, bookmarks
 

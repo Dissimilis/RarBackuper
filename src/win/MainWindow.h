@@ -54,6 +54,7 @@ private:
     void OnBackupOrCancel();
     void SetRunningUi(bool running);
     void StartBackup();
+    void ShowCompletionNotification(const engine::RunSummary& summary);
     void HandleCompleted(const engine::RunSummary& summary);
     void OnOpenDestination();
     std::wstring PasswordText() const;

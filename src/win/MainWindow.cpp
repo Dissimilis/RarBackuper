@@ -211,6 +211,18 @@ LRESULT MainWindow::HandleMessage(UINT msg, WPARAM wp, LPARAM lp)
         DestroyWindow(hwnd_);
         return 0;
 
+    case WM_TIMER:
+        if (wp == 1)
+        {
+            KillTimer(hwnd_, 1);
+            NOTIFYICONDATAW nid{};
+            nid.cbSize = sizeof(nid);
+            nid.hWnd = hwnd_;
+            nid.uID = 1;
+            Shell_NotifyIconW(NIM_DELETE, &nid);
+        }
+        return 0;
+
     case WM_DESTROY:
         if (run_)
         {
@@ -819,6 +831,46 @@ void MainWindow::StartBackup()
     run_->Start();
 }
 
+void MainWindow::ShowCompletionNotification(const engine::RunSummary& summary)
+{
+    // Transient tray icon just to carry the balloon; removed right after.
+    NOTIFYICONDATAW nid{};
+    nid.cbSize = sizeof(nid);
+    nid.hWnd = hwnd_;
+    nid.uID = 1;
+    nid.uFlags = NIF_ICON | NIF_TIP | NIF_INFO;
+    nid.hIcon = LoadIconW(nullptr, IDI_APPLICATION);
+    wcscpy_s(nid.szTip, L"RarBackuper");
+    const wchar_t* title = L"Backup finished";
+    DWORD flags = NIIF_INFO;
+    switch (summary.outcome)
+    {
+    case engine::RunOutcome::Success:
+        title = L"Backup completed";
+        break;
+    case engine::RunOutcome::Warning:
+        title = L"Backup completed with warnings";
+        flags = NIIF_WARNING;
+        break;
+    case engine::RunOutcome::Cancelled:
+        title = L"Backup cancelled";
+        flags = NIIF_WARNING;
+        break;
+    default:
+        title = L"Backup failed";
+        flags = NIIF_ERROR;
+        break;
+    }
+    wcscpy_s(nid.szInfoTitle, title);
+    wcsncpy_s(nid.szInfo, summary.message.c_str(), _TRUNCATE);
+    nid.dwInfoFlags = flags;
+    if (Shell_NotifyIconW(NIM_ADD, &nid))
+    {
+        // keep the icon long enough for the balloon to show, then drop it
+        SetTimer(hwnd_, 1, 10000, nullptr);
+    }
+}
+
 void MainWindow::HandleCompleted(const engine::RunSummary& summary)
 {
     if (run_)
@@ -827,6 +879,7 @@ void MainWindow::HandleCompleted(const engine::RunSummary& summary)
         delete run_;
         run_ = nullptr;
     }
+    ShowCompletionNotification(summary);
     SetRunningUi(false);
     EnableWindow(btnBackup_, !rarPath_.empty());
     SetWindowTextW(lblCurrentFile_, L"");
