@@ -6,6 +6,8 @@
 
 #include <string>
 
+#include "win/Theme.h"
+
 namespace win
 {
 
@@ -203,13 +205,16 @@ INT_PTR CALLBACK DlgProc(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
         ListView_InsertColumn(s->list, 1, &col);
 
         s->edit = create(L"EDIT", L"", WS_TABSTOP | WS_BORDER | ES_AUTOHSCROLL, IDC_RULE_EDIT);
-        create(L"BUTTON", L"Add folder...", WS_TABSTOP | BS_PUSHBUTTON, IDC_BTN_ADD_FOLDER);
-        create(L"BUTTON", L"Add file...", WS_TABSTOP | BS_PUSHBUTTON, IDC_BTN_ADD_FILE);
-        create(L"BUTTON", L"Add pattern", WS_TABSTOP | BS_PUSHBUTTON, IDC_BTN_ADD_PATTERN);
-        create(L"BUTTON", L"Remove", WS_TABSTOP | BS_PUSHBUTTON, IDC_BTN_REMOVE_RULE);
-        create(L"BUTTON", L"Restore defaults", WS_TABSTOP | BS_PUSHBUTTON, IDC_BTN_RESTORE_DEFAULTS);
-        create(L"BUTTON", L"OK", WS_TABSTOP | BS_DEFPUSHBUTTON, IDOK);
-        create(L"BUTTON", L"Cancel", WS_TABSTOP | BS_PUSHBUTTON, IDCANCEL);
+        create(L"BUTTON", L"Add folder...", WS_TABSTOP | BS_OWNERDRAW, IDC_BTN_ADD_FOLDER);
+        create(L"BUTTON", L"Add file...", WS_TABSTOP | BS_OWNERDRAW, IDC_BTN_ADD_FILE);
+        create(L"BUTTON", L"Add pattern", WS_TABSTOP | BS_OWNERDRAW, IDC_BTN_ADD_PATTERN);
+        create(L"BUTTON", L"Remove", WS_TABSTOP | BS_OWNERDRAW, IDC_BTN_REMOVE_RULE);
+        create(L"BUTTON", L"Restore defaults", WS_TABSTOP | BS_OWNERDRAW, IDC_BTN_RESTORE_DEFAULTS);
+        create(L"BUTTON", L"OK", WS_TABSTOP | BS_OWNERDRAW, IDOK);
+        create(L"BUTTON", L"Cancel", WS_TABSTOP | BS_OWNERDRAW, IDCANCEL);
+
+        theme::ApplyDarkTitleBar(dlg);
+        theme::StyleListView(s->list);
 
         int w = MulDiv(620, static_cast<int>(s->dpi), 96);
         int h = MulDiv(440, static_cast<int>(s->dpi), 96);
@@ -220,6 +225,28 @@ INT_PTR CALLBACK DlgProc(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
         LayoutDialog(dlg, *s);
         RefreshList(*s);
         return TRUE;
+    }
+
+    case WM_CTLCOLORDLG:
+        return reinterpret_cast<INT_PTR>(theme::BgBrush());
+
+    case WM_CTLCOLORSTATIC:
+    case WM_CTLCOLOREDIT:
+    case WM_CTLCOLORLISTBOX:
+        return reinterpret_cast<INT_PTR>(
+            theme::OnCtlColor(msg, reinterpret_cast<HDC>(wp), reinterpret_cast<HWND>(lp),
+                              nullptr, nullptr, 0, nullptr, 0));
+
+    case WM_DRAWITEM:
+    {
+        auto* dis = reinterpret_cast<DRAWITEMSTRUCT*>(lp);
+        if (dis->CtlType == ODT_BUTTON)
+        {
+            theme::DrawButton(dis, dis->CtlID == IDOK ? theme::ButtonAccent::Yellow
+                                                      : theme::ButtonAccent::Cyan);
+            return TRUE;
+        }
+        return FALSE;
     }
 
     case WM_COMMAND:

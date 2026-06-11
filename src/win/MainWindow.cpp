@@ -11,6 +11,7 @@
 #include "engine/RarDiscovery.h"
 #include "engine/RarRunner.h"
 #include "win/ExcludeDialog.h"
+#include "win/Theme.h"
 
 namespace win
 {
@@ -78,7 +79,7 @@ MainWindow* MainWindow::Create(HINSTANCE hInstance, int nCmdShow)
     wc.lpfnWndProc = StaticWndProc;
     wc.hInstance = hInstance;
     wc.hCursor = LoadCursorW(nullptr, IDC_ARROW);
-    wc.hbrBackground = reinterpret_cast<HBRUSH>(COLOR_BTNFACE + 1);
+    wc.hbrBackground = theme::BgBrush();
     wc.lpszClassName = kClassName;
     wc.hIcon = LoadIconW(hInstance, MAKEINTRESOURCEW(101));
     wc.hIconSm = static_cast<HICON>(LoadImageW(hInstance, MAKEINTRESOURCEW(101), IMAGE_ICON,
@@ -154,10 +155,42 @@ LRESULT MainWindow::HandleMessage(UINT msg, WPARAM wp, LPARAM lp)
         return reinterpret_cast<LRESULT>(font_);
 
     case WM_CTLCOLORSTATIC:
+    case WM_CTLCOLOREDIT:
+    case WM_CTLCOLORLISTBOX:
     {
-        HDC dc = reinterpret_cast<HDC>(wp);
-        SetBkColor(dc, GetSysColor(COLOR_BTNFACE));
-        return reinterpret_cast<LRESULT>(GetSysColorBrush(COLOR_BTNFACE));
+        const HWND yellow[] = {lblFolders_, grpCapsule_};
+        const HWND magenta[] = {lblCurrentFile_, lblExcludes_};
+        return reinterpret_cast<LRESULT>(
+            theme::OnCtlColor(msg, reinterpret_cast<HDC>(wp), reinterpret_cast<HWND>(lp),
+                              editLog_, yellow, 2, magenta, 2));
+    }
+
+    case WM_DRAWITEM:
+    {
+        auto* dis = reinterpret_cast<DRAWITEMSTRUCT*>(lp);
+        if (dis->CtlType == ODT_COMBOBOX)
+        {
+            theme::DrawComboItem(dis);
+            return TRUE;
+        }
+        if (dis->CtlType == ODT_BUTTON)
+        {
+            theme::DrawButton(dis, dis->CtlID == IDC_BTN_BACKUP ? theme::ButtonAccent::Yellow
+                                                                : theme::ButtonAccent::Cyan);
+            return TRUE;
+        }
+        break;
+    }
+
+    case WM_MEASUREITEM:
+    {
+        auto* mis = reinterpret_cast<MEASUREITEMSTRUCT*>(lp);
+        if (mis->CtlType == ODT_COMBOBOX)
+        {
+            mis->itemHeight = static_cast<UINT>(Scale(20));
+            return TRUE;
+        }
+        break;
     }
 
     case WM_COMMAND:
@@ -244,6 +277,7 @@ LRESULT MainWindow::HandleMessage(UINT msg, WPARAM wp, LPARAM lp)
 void MainWindow::OnCreate()
 {
     dpi_ = GetDpiForWindow(hwnd_);
+    theme::ApplyDarkTitleBar(hwnd_);
     sink_ = std::make_unique<GuiEventSink>(hwnd_);
     CreateControls();
     ApplyFonts();
@@ -295,17 +329,19 @@ void MainWindow::CreateControls()
     col.cx = 600;
     ListView_InsertColumn(folderList_, 0, &col);
 
-    btnAdd_ = create(L"BUTTON", L"Add...", WS_TABSTOP | BS_PUSHBUTTON, IDC_BTN_ADD);
-    btnRemove_ = create(L"BUTTON", L"Remove", WS_TABSTOP | BS_PUSHBUTTON, IDC_BTN_REMOVE);
+    btnAdd_ = create(L"BUTTON", L"Add...", WS_TABSTOP | BS_OWNERDRAW, IDC_BTN_ADD);
+    btnRemove_ = create(L"BUTTON", L"Remove", WS_TABSTOP | BS_OWNERDRAW, IDC_BTN_REMOVE);
 
     lblName_ = create(L"STATIC", L"Backup name:", 0, 0);
     editName_ = create(L"EDIT", L"", WS_TABSTOP | WS_BORDER | ES_AUTOHSCROLL, IDC_EDIT_NAME);
     lblDest_ = create(L"STATIC", L"Destination:", 0, 0);
     editDest_ = create(L"EDIT", L"", WS_BORDER | ES_AUTOHSCROLL | ES_READONLY, IDC_EDIT_DEST);
-    btnBrowse_ = create(L"BUTTON", L"Browse...", WS_TABSTOP | BS_PUSHBUTTON, IDC_BTN_BROWSE);
+    btnBrowse_ = create(L"BUTTON", L"Browse...", WS_TABSTOP | BS_OWNERDRAW, IDC_BTN_BROWSE);
 
     lblLevel_ = create(L"STATIC", L"Compression:", 0, 0);
-    comboLevel_ = create(WC_COMBOBOXW, L"", WS_TABSTOP | CBS_DROPDOWNLIST, IDC_COMBO_LEVEL);
+    comboLevel_ = create(WC_COMBOBOXW, L"",
+                         WS_TABSTOP | CBS_DROPDOWNLIST | CBS_OWNERDRAWFIXED | CBS_HASSTRINGS,
+                         IDC_COMBO_LEVEL);
     for (const wchar_t* s : {L"Store", L"Fast", L"Normal", L"Best"})
         ComboBox_AddString(comboLevel_, s);
     chkSolid_ = create(L"BUTTON", L"Solid archive", WS_TABSTOP | BS_AUTOCHECKBOX, IDC_CHK_SOLID);
@@ -315,10 +351,10 @@ void MainWindow::CreateControls()
     editPassword_ = create(L"EDIT", L"", WS_TABSTOP | WS_BORDER | ES_AUTOHSCROLL | ES_PASSWORD,
                            IDC_EDIT_PASSWORD);
     lblExcludes_ = create(L"STATIC", L"Excludes [ 0 rules ]", 0, 0);
-    btnExcludes_ = create(L"BUTTON", L"Edit...", WS_TABSTOP | BS_PUSHBUTTON, IDC_BTN_EXCLUDES);
+    btnExcludes_ = create(L"BUTTON", L"Edit...", WS_TABSTOP | BS_OWNERDRAW, IDC_BTN_EXCLUDES);
 
-    btnSaveProfile_ = create(L"BUTTON", L"Save profile...", WS_TABSTOP | BS_PUSHBUTTON, IDC_BTN_SAVE_PROFILE);
-    btnLoadProfile_ = create(L"BUTTON", L"Load profile...", WS_TABSTOP | BS_PUSHBUTTON, IDC_BTN_LOAD_PROFILE);
+    btnSaveProfile_ = create(L"BUTTON", L"Save profile...", WS_TABSTOP | BS_OWNERDRAW, IDC_BTN_SAVE_PROFILE);
+    btnLoadProfile_ = create(L"BUTTON", L"Load profile...", WS_TABSTOP | BS_OWNERDRAW, IDC_BTN_LOAD_PROFILE);
 
     grpCapsule_ = create(L"BUTTON", L"Time capsule", BS_GROUPBOX, 0);
     chkSysInfo_ = create(L"BUTTON", L"System info", WS_TABSTOP | BS_AUTOCHECKBOX, IDC_CHK_SYSINFO);
@@ -329,10 +365,10 @@ void MainWindow::CreateControls()
     chkImportant_ = create(L"BUTTON", L"Important Stuff (credentials, keys, configs)",
                            WS_TABSTOP | BS_AUTOCHECKBOX, IDC_CHK_IMPORTANT);
 
-    btnBackup_ = create(L"BUTTON", L"Backup", WS_TABSTOP | BS_PUSHBUTTON | BS_DEFPUSHBUTTON, IDC_BTN_BACKUP);
+    btnBackup_ = create(L"BUTTON", L"BACKUP", WS_TABSTOP | BS_OWNERDRAW, IDC_BTN_BACKUP);
     progress_ = create(PROGRESS_CLASSW, L"", 0, 0);
     lblCurrentFile_ = create(L"STATIC", L"", SS_PATHELLIPSIS, 0);
-    btnOpenDest_ = create(L"BUTTON", L"Open destination", WS_TABSTOP | BS_PUSHBUTTON, IDC_BTN_OPEN_DEST);
+    btnOpenDest_ = create(L"BUTTON", L"Open destination", WS_TABSTOP | BS_OWNERDRAW, IDC_BTN_OPEN_DEST);
     ShowWindow(btnOpenDest_, SW_HIDE);
 
     editLog_ = create(L"EDIT", L"",
@@ -340,6 +376,16 @@ void MainWindow::CreateControls()
                           ES_AUTOVSCROLL,
                       IDC_EDIT_LOG);
     SendMessageW(editLog_, EM_SETLIMITTEXT, 0x7FFFFFFE, 0);
+
+    // cyberpunk skin: classic-render the theme-locked controls so colors
+    // apply, neon progress bar, dark scrollbars
+    for (HWND c : {chkSolid_, chkRecovery_, chkSysInfo_, chkInventory_, chkBookmarks_,
+                   chkImportant_, grpCapsule_, progress_, comboLevel_})
+        theme::MakeClassic(c);
+    SendMessageW(progress_, PBM_SETBARCOLOR, 0, theme::Magenta);
+    SendMessageW(progress_, PBM_SETBKCOLOR, 0, theme::Panel);
+    theme::StyleListView(folderList_);
+    theme::DarkScrollbars(editLog_);
 }
 
 void MainWindow::ApplyFonts()
@@ -350,12 +396,13 @@ void MainWindow::ApplyFonts()
         DeleteObject(bigFont_);
     if (monoFont_)
         DeleteObject(monoFont_);
-    int h = -MulDiv(9, static_cast<int>(dpi_), 72);
+    int h = -MulDiv(10, static_cast<int>(dpi_), 72);
+    // Bahnschrift (DIN-like, ships with Windows 10+) for the techy look
     font_ = CreateFontW(h, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET, 0, 0,
-                        CLEARTYPE_QUALITY, DEFAULT_PITCH, L"Segoe UI");
-    bigFont_ = CreateFontW(-MulDiv(13, static_cast<int>(dpi_), 72), 0, 0, 0, FW_SEMIBOLD, FALSE,
+                        CLEARTYPE_QUALITY, DEFAULT_PITCH, L"Bahnschrift");
+    bigFont_ = CreateFontW(-MulDiv(15, static_cast<int>(dpi_), 72), 0, 0, 0, FW_BOLD, FALSE,
                            FALSE, FALSE, DEFAULT_CHARSET, 0, 0, CLEARTYPE_QUALITY, DEFAULT_PITCH,
-                           L"Segoe UI");
+                           L"Bahnschrift");
     monoFont_ = CreateFontW(h, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET, 0, 0,
                             CLEARTYPE_QUALITY, FIXED_PITCH, L"Consolas");
 
@@ -694,7 +741,7 @@ void MainWindow::OnCommand(int id, int code, HWND ctrl)
 void MainWindow::SetRunningUi(bool running)
 {
     running_ = running;
-    SetWindowTextW(btnBackup_, running ? L"Cancel" : L"Backup");
+    SetWindowTextW(btnBackup_, running ? L"CANCEL" : L"BACKUP");
     for (HWND c : {folderList_, btnAdd_, btnRemove_, editName_, btnBrowse_, comboLevel_, chkSolid_,
                    chkRecovery_, editPassword_, btnExcludes_, btnSaveProfile_, btnLoadProfile_,
                    chkSysInfo_, chkInventory_, chkBookmarks_, chkImportant_})

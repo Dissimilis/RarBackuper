@@ -36,6 +36,7 @@ set(GUI_SOURCES
     src/win/MainWindow.cpp
     src/win/ExcludeDialog.cpp
     src/win/Logger.cpp
+    src/win/Theme.cpp
     src/cli/CliMain.cpp
 )
 
@@ -47,7 +48,7 @@ add_executable(RarBackuper WIN32
 )
 target_include_directories(RarBackuper PRIVATE src third_party)
 target_compile_definitions(RarBackuper PRIVATE UNICODE _UNICODE NOMINMAX WIN32_LEAN_AND_MEAN _WIN32_WINNT=0x0A00 WINVER=0x0A00)
-target_link_libraries(RarBackuper PRIVATE comctl32 shell32 ole32 oleaut32 uuid advapi32 shlwapi wbemuuid)
+target_link_libraries(RarBackuper PRIVATE comctl32 shell32 ole32 oleaut32 uuid advapi32 shlwapi wbemuuid dwmapi uxtheme)
 
 if(MINGW)
     target_link_options(RarBackuper PRIVATE -static -municode $<$<CONFIG:Release>:-s>)
