@@ -78,6 +78,16 @@ TEST_CASE("exclude rules are translated and emitted as -x switches")
     CHECK(cmd.commandLine.find(L"-x*.log") != std::wstring::npos);
 }
 
+TEST_CASE("recovery record is on by default and -rr1 can be disabled")
+{
+    auto cfg = baseConfig();
+    CHECK(BuildRarCommand(L"r", cfg, L"a.rar", L"", L"").commandLine.find(L" -rr1 ") !=
+          std::wstring::npos);
+    cfg.recoveryRecord = false;
+    CHECK(BuildRarCommand(L"r", cfg, L"a.rar", L"", L"").commandLine.find(L"-rr1") ==
+          std::wstring::npos);
+}
+
 TEST_CASE("-w is never emitted")
 {
     auto cfg = baseConfig();

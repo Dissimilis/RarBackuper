@@ -31,6 +31,7 @@ struct AppConfig
     std::wstring destination;
     CompressionLevel level = CompressionLevel::Normal;
     bool solid = false;
+    bool recoveryRecord = true; // -rr1; on by default
     std::vector<ExcludeRule> excludeRules = DefaultExcludeRules();
     bool capsuleSystemInfo = false;
     bool capsuleFileInventory = false;

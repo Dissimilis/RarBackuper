@@ -11,6 +11,7 @@ TEST_CASE("round-trip preserves every field including non-ASCII")
     c.destination = L"E:\\Atsarginės";
     c.level = CompressionLevel::Best;
     c.solid = true;
+    c.recoveryRecord = false;
     c.excludeRules = {{RuleType::Folder, L"node_modules"},
                       {RuleType::File, L"Thumbs.db"},
                       {RuleType::Pattern, L"*.log"}};
@@ -27,6 +28,7 @@ TEST_CASE("round-trip preserves every field including non-ASCII")
     CHECK(r.config.destination == c.destination);
     CHECK(r.config.level == c.level);
     CHECK(r.config.solid == c.solid);
+    CHECK(r.config.recoveryRecord == false);
     REQUIRE(r.config.excludeRules.size() == 3);
     CHECK(r.config.excludeRules[0].type == RuleType::Folder);
     CHECK(r.config.excludeRules[0].value == L"node_modules");
@@ -53,6 +55,7 @@ TEST_CASE("fresh-install defaults")
     CHECK(c.destination.empty());
     CHECK(c.level == CompressionLevel::Normal);
     CHECK(c.solid == false);
+    CHECK(c.recoveryRecord == true); // on by default
     CHECK(c.excludeRules.size() == DefaultExcludeRules().size());
     CHECK(c.capsuleSystemInfo == false);
     CHECK(c.capsuleFileInventory == false);
@@ -65,6 +68,7 @@ TEST_CASE("empty JSON object yields defaults")
     auto r = ConfigFromJson("{}");
     REQUIRE(r.ok);
     CHECK(r.config.level == CompressionLevel::Normal);
+    CHECK(r.config.recoveryRecord == true);
     CHECK(r.config.excludeRules.size() == DefaultExcludeRules().size());
 }
 

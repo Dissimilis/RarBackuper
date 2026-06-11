@@ -11,11 +11,11 @@ progress bar, large textual log area, optional "time capsule" extras
 (system/partition info, full-drive file inventories, browser bookmarks,
 "Important Stuff" auto-detection of small critical files).
 
-**Status: pre-implementation.** No application code exists yet. The approved
-design lives in `docs/superpowers/specs/2026-06-10-rarbackuper-design.md` —
-read it before any implementation work; it is the source of truth for
-behavior, UI layout, the exclude-rule defaults, and the Important Stuff
-detector catalog.
+**Status: implemented** (GUI + headless CLI + unit/integration tests). The
+approved design lives in `docs/superpowers/specs/2026-06-10-rarbackuper-design.md`;
+it remains the reference for behavior, UI layout, the exclude-rule defaults,
+and the Important Stuff detector catalog (this file records any later
+deviations, e.g. the recovery record became a user-toggleable setting).
 
 ## Tech stack (decided, do not change without asking)
 
@@ -37,7 +37,8 @@ detector catalog.
   folder*, then deleted after archiving.
 - **Password is never persisted** — not in `settings.json`, not in profiles,
   masked in logged command lines (`-hp***`).
-- **Recovery record always on**: every archive gets `-rr1`.
+- **Recovery record on by default**: archives get `-rr1` unless the user
+  unchecks the "Recovery record" checkbox (persisted setting).
 - Each run creates a new timestamped archive `<Name>_<yyyy-MM-dd_HHmm>.rar`;
   existing archives are never modified.
 - Backups run on a worker thread; UI updates only via `PostMessage`.

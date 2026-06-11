@@ -90,6 +90,7 @@ std::string ConfigToJson(const AppConfig& config)
     j["destination"] = WideToUtf8(config.destination);
     j["compressionLevel"] = LevelName(config.level);
     j["solid"] = config.solid;
+    j["recoveryRecord"] = config.recoveryRecord;
     json rules = json::array();
     for (const auto& r : config.excludeRules)
         rules.push_back(json{{"type", RuleTypeName(r.type)}, {"value", WideToUtf8(r.value)}});
@@ -146,6 +147,8 @@ ConfigParseResult ConfigFromJson(std::string_view text)
         }
         if (j.contains("solid"))
             c.solid = RequireBool(j["solid"], "solid");
+        if (j.contains("recoveryRecord"))
+            c.recoveryRecord = RequireBool(j["recoveryRecord"], "recoveryRecord");
         if (j.contains("excludeRules"))
         {
             const json& arr = j["excludeRules"];

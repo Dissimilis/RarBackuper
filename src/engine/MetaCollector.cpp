@@ -66,8 +66,9 @@ std::wstring MetaCollector::WriteCommentFile(const core::AppConfig& config)
     text += L"Folders:\r\n";
     for (const auto& f : config.folders)
         text += L"  " + f + L"\r\n";
-    text += std::format(L"Compression: {}\r\nSolid: {}\r\n",
-                        core::CompressionLevelName(config.level), config.solid ? L"yes" : L"no");
+    text += std::format(L"Compression: {}\r\nSolid: {}\r\nRecovery record: {}\r\n",
+                        core::CompressionLevelName(config.level), config.solid ? L"yes" : L"no",
+                        config.recoveryRecord ? L"yes" : L"no");
     text += std::format(L"Exclude rules ({}):\r\n", config.excludeRules.size());
     for (const auto& r : config.excludeRules)
     {

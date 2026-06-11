@@ -79,6 +79,7 @@ private:
     HWND lblLevel_ = nullptr;
     HWND comboLevel_ = nullptr;
     HWND chkSolid_ = nullptr;
+    HWND chkRecovery_ = nullptr;
     HWND lblPassword_ = nullptr;
     HWND editPassword_ = nullptr;
     HWND lblExcludes_ = nullptr;

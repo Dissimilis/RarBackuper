@@ -32,8 +32,8 @@ standard `.rar` files you can open anywhere.
 - **Encryption** — optional password encrypts both data and headers
   (`-hp`). The password lives only for the session: it is never written to
   disk and is masked as `-hp***` in every logged command line.
-- **Recovery record** — every archive gets `-rr1`, so minor media damage is
-  repairable.
+- **Recovery record** — archives get `-rr1` by default (a checkbox turns it
+  off), so minor media damage is repairable.
 - **Archive comment stamp** — machine name, date, the exact folder list and
   the full exclude rule set are embedded as a RAR comment, visible in any
   WinRAR UI without extracting.

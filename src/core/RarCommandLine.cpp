@@ -52,7 +52,8 @@ std::wstring Build(const std::wstring& rarExePath,
         cmd += L" -s";
     if (!password.empty())
         cmd += L" " + SwitchToken(maskPassword ? std::wstring(L"-hp***") : L"-hp" + password);
-    cmd += L" -rr1";
+    if (config.recoveryRecord)
+        cmd += L" -rr1";
     if (!commentFilePath.empty())
         cmd += L" " + SwitchToken(L"-z" + commentFilePath);
     // Deterministic UTF-8 for redirected output (R) and, when a comment is

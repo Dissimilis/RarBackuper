@@ -30,6 +30,7 @@ enum ControlId : int
     IDC_BTN_BROWSE,
     IDC_COMBO_LEVEL,
     IDC_CHK_SOLID,
+    IDC_CHK_RECOVERY,
     IDC_EDIT_PASSWORD,
     IDC_BTN_EXCLUDES,
     IDC_BTN_SAVE_PROFILE,
@@ -308,6 +309,8 @@ void MainWindow::CreateControls()
     for (const wchar_t* s : {L"Store", L"Fast", L"Normal", L"Best"})
         ComboBox_AddString(comboLevel_, s);
     chkSolid_ = create(L"BUTTON", L"Solid archive", WS_TABSTOP | BS_AUTOCHECKBOX, IDC_CHK_SOLID);
+    chkRecovery_ = create(L"BUTTON", L"Recovery record", WS_TABSTOP | BS_AUTOCHECKBOX,
+                          IDC_CHK_RECOVERY);
     lblPassword_ = create(L"STATIC", L"Password:", 0, 0);
     editPassword_ = create(L"EDIT", L"", WS_TABSTOP | WS_BORDER | ES_AUTOHSCROLL | ES_PASSWORD,
                            IDC_EDIT_PASSWORD);
@@ -357,7 +360,8 @@ void MainWindow::ApplyFonts()
                             CLEARTYPE_QUALITY, FIXED_PITCH, L"Consolas");
 
     for (HWND c : {lblFolders_, folderList_, btnAdd_, btnRemove_, lblName_, editName_, lblDest_,
-                   editDest_, btnBrowse_, lblLevel_, comboLevel_, chkSolid_, lblPassword_,
+                   editDest_, btnBrowse_, lblLevel_, comboLevel_, chkSolid_, chkRecovery_,
+                   lblPassword_,
                    editPassword_, lblExcludes_, btnExcludes_, btnSaveProfile_, btnLoadProfile_,
                    grpCapsule_, chkSysInfo_, chkInventory_, chkBookmarks_, chkImportant_,
                    progress_, lblCurrentFile_, btnOpenDest_})
@@ -419,6 +423,7 @@ void MainWindow::Layout()
 
     place(btnSaveProfile_, m, y, Scale(110), Scale(26));
     place(btnLoadProfile_, m + Scale(118), y, Scale(110), Scale(26));
+    place(chkRecovery_, m + Scale(248), y + Scale(4), Scale(130), Scale(20));
     y += Scale(34);
 
     int grpH = Scale(74);
@@ -496,6 +501,7 @@ void MainWindow::RefreshUiFromConfig()
     SetWindowTextW(editDest_, c.destination.c_str());
     ComboBox_SetCurSel(comboLevel_, static_cast<int>(c.level));
     Button_SetCheck(chkSolid_, c.solid ? BST_CHECKED : BST_UNCHECKED);
+    Button_SetCheck(chkRecovery_, c.recoveryRecord ? BST_CHECKED : BST_UNCHECKED);
     Button_SetCheck(chkSysInfo_, c.capsuleSystemInfo ? BST_CHECKED : BST_UNCHECKED);
     Button_SetCheck(chkInventory_, c.capsuleFileInventory ? BST_CHECKED : BST_UNCHECKED);
     Button_SetCheck(chkBookmarks_, c.capsuleBookmarks ? BST_CHECKED : BST_UNCHECKED);
@@ -639,6 +645,13 @@ void MainWindow::OnCommand(int id, int code, HWND ctrl)
             PersistSettings();
         }
         break;
+    case IDC_CHK_RECOVERY:
+        if (code == BN_CLICKED)
+        {
+            settings_.config.recoveryRecord = Button_GetCheck(chkRecovery_) == BST_CHECKED;
+            PersistSettings();
+        }
+        break;
     case IDC_CHK_SYSINFO:
     case IDC_CHK_INVENTORY:
     case IDC_CHK_BOOKMARKS:
@@ -683,8 +696,8 @@ void MainWindow::SetRunningUi(bool running)
     running_ = running;
     SetWindowTextW(btnBackup_, running ? L"Cancel" : L"Backup");
     for (HWND c : {folderList_, btnAdd_, btnRemove_, editName_, btnBrowse_, comboLevel_, chkSolid_,
-                   editPassword_, btnExcludes_, btnSaveProfile_, btnLoadProfile_, chkSysInfo_,
-                   chkInventory_, chkBookmarks_, chkImportant_})
+                   chkRecovery_, editPassword_, btnExcludes_, btnSaveProfile_, btnLoadProfile_,
+                   chkSysInfo_, chkInventory_, chkBookmarks_, chkImportant_})
         EnableWindow(c, !running);
     if (running)
     {

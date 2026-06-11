@@ -14,8 +14,9 @@ struct RarCommand
 };
 
 // Builds the full Rar.exe command line:
-//   "<rar>" a -m<level> [-s] [-hp<pw>] -rr1 [-z<comment>] -scF[C]R -idp
+//   "<rar>" a -m<level> [-s] [-hp<pw>] [-rr1] [-z<comment>] -scF[C]R -idp
 //   -x<mask>... -y -- "<archive>" "<folder>"...
+// -rr1 is emitted when config.recoveryRecord is set (the default).
 // Never emits -w (no work/temp directory -- hard constraint).
 RarCommand BuildRarCommand(const std::wstring& rarExePath,
                            const AppConfig& config,
