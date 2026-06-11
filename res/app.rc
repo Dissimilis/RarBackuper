@@ -1,2 +1,5 @@
 // 1 = CREATEPROCESS_MANIFEST_RESOURCE_ID, 24 = RT_MANIFEST
 1 24 "app.manifest"
+
+// application icon (lowest-ID icon becomes the exe icon in Explorer)
+101 ICON "app.ico"

@@ -55,8 +55,26 @@ std::wstring UnrarExe()
 
 std::wstring BuiltAppExe()
 {
-    static std::wstring path = engine::ExeDirectory() + L"\\RarBackuper.exe";
-    return GetFileAttributesW(path.c_str()) != INVALID_FILE_ATTRIBUTES ? path : L"";
+    // The app exe lands in <repo>\dist; older layouts had it beside the
+    // test exe. Search both, walking up from the test exe's directory.
+    static std::wstring path = []() -> std::wstring
+    {
+        fs::path dir = engine::ExeDirectory();
+        for (int i = 0; i < 4; ++i)
+        {
+            for (const wchar_t* rel : {L"RarBackuper.exe", L"dist\\RarBackuper.exe"})
+            {
+                fs::path candidate = dir / rel;
+                if (GetFileAttributesW(candidate.c_str()) != INVALID_FILE_ATTRIBUTES)
+                    return candidate.wstring();
+            }
+            if (!dir.has_parent_path() || dir.parent_path() == dir)
+                break;
+            dir = dir.parent_path();
+        }
+        return L"";
+    }();
+    return path;
 }
 
 // ---- fixtures under the build directory ----

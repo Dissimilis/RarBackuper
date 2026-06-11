@@ -66,9 +66,16 @@ std::wstring MetaCollector::WriteCommentFile(const core::AppConfig& config)
     text += L"Folders:\r\n";
     for (const auto& f : config.folders)
         text += L"  " + f + L"\r\n";
-    text += std::format(L"Compression: {}\r\nSolid: {}\r\nExclude rules: {}\r\n",
-                        core::CompressionLevelName(config.level), config.solid ? L"yes" : L"no",
-                        config.excludeRules.size());
+    text += std::format(L"Compression: {}\r\nSolid: {}\r\n",
+                        core::CompressionLevelName(config.level), config.solid ? L"yes" : L"no");
+    text += std::format(L"Exclude rules ({}):\r\n", config.excludeRules.size());
+    for (const auto& r : config.excludeRules)
+    {
+        const wchar_t* type = r.type == core::RuleType::Folder ? L"folder"
+                              : r.type == core::RuleType::File ? L"file"
+                                                               : L"pattern";
+        text += std::format(L"  {}: {}\r\n", type, r.value);
+    }
 
     if (!WriteFileUtf8(commentFile_, core::WideToUtf8(text)))
     {

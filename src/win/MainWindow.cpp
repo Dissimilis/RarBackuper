@@ -79,7 +79,10 @@ MainWindow* MainWindow::Create(HINSTANCE hInstance, int nCmdShow)
     wc.hCursor = LoadCursorW(nullptr, IDC_ARROW);
     wc.hbrBackground = reinterpret_cast<HBRUSH>(COLOR_BTNFACE + 1);
     wc.lpszClassName = kClassName;
-    wc.hIcon = LoadIconW(nullptr, IDI_APPLICATION);
+    wc.hIcon = LoadIconW(hInstance, MAKEINTRESOURCEW(101));
+    wc.hIconSm = static_cast<HICON>(LoadImageW(hInstance, MAKEINTRESOURCEW(101), IMAGE_ICON,
+                                               GetSystemMetrics(SM_CXSMICON),
+                                               GetSystemMetrics(SM_CYSMICON), LR_DEFAULTCOLOR));
     RegisterClassExW(&wc);
 
     auto* self = new MainWindow();
@@ -839,7 +842,7 @@ void MainWindow::ShowCompletionNotification(const engine::RunSummary& summary)
     nid.hWnd = hwnd_;
     nid.uID = 1;
     nid.uFlags = NIF_ICON | NIF_TIP | NIF_INFO;
-    nid.hIcon = LoadIconW(nullptr, IDI_APPLICATION);
+    nid.hIcon = LoadIconW(hInstance_, MAKEINTRESOURCEW(101));
     wcscpy_s(nid.szTip, L"RarBackuper");
     const wchar_t* title = L"Backup finished";
     DWORD flags = NIIF_INFO;
